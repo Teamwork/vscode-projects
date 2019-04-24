@@ -6,8 +6,9 @@ class Utilities {
         var startMoment = moment(date);
         var endMoment = moment();
         var dif = endMoment.diff(startMoment, 'minutes');
-        if (dif > compareDuration)
+        if (dif > compareDuration) {
             return true;
+        }
         return false;
     }
 }

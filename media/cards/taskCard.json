@@ -29,6 +29,7 @@
                                     "type": "TextBlock",
                                     "size": "Medium",
                                     "weight": "Bolder",
+                                    "wrap": true,
                                     "text": "{$root.content}"
                                 },
                                 {
@@ -112,8 +113,7 @@
                             "items": [
                                 {
                                     "type": "Image",
-                                    "url": "https://tw-synthesiscore-beta.us.teamworkops.com/img/projects/file.png",
-                                    "altText": ""
+                                    "url": "https://tw-synthesiscore-beta.us.teamworkops.com/img/projects/file.png"
                                 }
                             ],
                             "width": "auto"
@@ -156,8 +156,7 @@
                                     "items": [
                                         {
                                             "type": "Image",
-                                            "url": "https://tw-synthesiscore-beta.us.teamworkops.com/img/projects/comment.png",
-                                            "altText": ""
+                                            "url": "https://tw-synthesiscore-beta.us.teamworkops.com/img/projects/comment.png"
                                         }
                                     ],
                                     "width": "auto"
@@ -223,7 +222,8 @@
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "text": "{$data.body}"
+                                    "text": "{$data.body}",
+                                    "wrap":true
                                 }
                             ],
                             "width": "stretch"

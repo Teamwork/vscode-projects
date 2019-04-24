@@ -188,7 +188,7 @@ export class TeamworkProjects{
              let context = new EvaluationContext();
              context.$root = todo;
              let expandedTemplatePayload = template.expand(context);
-    
+
             // Local path to main script run in the webview
             const scriptPathOnDisk = vscode.Uri.file(
                 path.join(this._extensionPath, 'media/js', 'mainAdaptive.js')
@@ -218,7 +218,6 @@ export class TeamworkProjects{
 
             const nonce = this.getNonce();
 
-
             return `<!DOCTYPE html>
                     <html lang="en">
                     <head>
@@ -226,17 +225,20 @@ export class TeamworkProjects{
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Cat Coding</title>
                         <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
-                        <script nonce="${nonce}" src="${jqueryUri}"></script>
-                        <script nonce="${nonce}" src="${ACUri}"></script>
-                        <script nonce="${nonce}" src="${MarkdownUri}"></script>
-                        <script nonce="${nonce}" src="${scriptUri}"></script>
+
                         <link rel="stylesheet" href="${mainstyleUri}"  nonce="${nonce}"  type="text/css" />
                         <link rel="stylesheet" href="${ACStyleUri}"  nonce="${nonce}"  type="text/css" />
                     </head>
                     <body>
-                        <input type='hidden' id='cardData' value='${JSON.stringify(expandedTemplatePayload)}'>
                         <div id="exampleDiv"></div>
                         <div id="out"></div>
+                        <script nonce="${nonce}" src="${jqueryUri}"></script>
+                        <script nonce="${nonce}" src="${ACUri}"></script>
+                        <script nonce="${nonce}" src="${MarkdownUri}"></script>
+                        <script nonce="${nonce}" src="${scriptUri}"></script>
+                        <div id="divData" style='display:none;'>
+                            ${JSON.stringify(expandedTemplatePayload)}
+                        </div>
                     </body>
                     </html>`;
         }
@@ -357,8 +359,8 @@ export class TeamworkProjects{
         let nodeList: ProjectQuickTip[] = []; 
 
         // Load from cache if duration less than 30 minutes
-        let cachedNodes : ProjectQuickTip[] = this._context.workspaceState.get("twp.data.projects");
-        let lastUpdated : Date = this._context.workspaceState.get("twp.data.projects.lastUpdated")
+        let cachedNodes : ProjectQuickTip[] = this._context.globalState.get("twp.data.projects");
+        let lastUpdated : Date = this._context.globalState.get("twp.data.projects.lastUpdated")
         if(cachedNodes && lastUpdated && !force){
             if(Utilities.DateCompare(lastUpdated,30)){
                 return cachedNodes;
@@ -388,8 +390,8 @@ export class TeamworkProjects{
             nodeList.push(item);
         });
 
-        this._context.workspaceState.update("twp.data.projects",nodeList);       
-        this._context.workspaceState.update("twp.data.projects.lastUpdated",Date.now())
+        this._context.globalState.update("twp.data.projects",nodeList);       
+        this._context.globalState.update("twp.data.projects.lastUpdated",Date.now())
         return nodeList;
     }
 
@@ -449,8 +451,8 @@ export class TeamworkProjects{
         let nodeList: INode[] = [];
 
         // Load from cache if duration less than 30 minutes
-        let cachedNodes : INode[] = context.workspaceState.get("twp.data." + id + ".tasklists");
-        let lastUpdated : Date = context.workspaceState.get("twp.data.tasklists." + id + ".lastUpdated")
+        let cachedNodes : INode[] = context.globalState.get("twp.data." + id + ".tasklists");
+        let lastUpdated : Date = context.globalState.get("twp.data.tasklists." + id + ".lastUpdated")
         if(cachedNodes && lastUpdated && !force){
             if(Utilities.DateCompare(lastUpdated,30)){
                 return cachedNodes;
@@ -476,8 +478,8 @@ export class TeamworkProjects{
             nodeList.push(new TaskListNode(element.name, element.id,this));
         });
 
-        context.workspaceState.update("twp.data." + id + ".tasklists",nodeList);
-        context.workspaceState.update("twp.data.tasklists." + id + ".lastUpdated",Date.now())
+        context.globalState.update("twp.data." + id + ".tasklists",nodeList);
+        context.globalState.update("twp.data.tasklists." + id + ".lastUpdated",Date.now())
         return nodeList; 
     }
    
@@ -495,8 +497,8 @@ export class TeamworkProjects{
 
         let nodeList: INode[] = []; 
         // Load from cache if duration less than 30 minutes
-        let cachedNodes : INode[] = context.workspaceState.get("twp.data." + id + ".todoitems");
-        let lastUpdated : Date = context.workspaceState.get("twp.data.tasklists." + id + ".todoitems")
+        let cachedNodes : INode[] = context.globalState.get("twp.data." + id + ".todoitems");
+        let lastUpdated : Date = context.globalState.get("twp.data.tasklists." + id + ".todoitems")
         if(cachedNodes && lastUpdated && !force){
             if(Utilities.DateCompare(lastUpdated,30)){
                 return cachedNodes;
@@ -521,8 +523,8 @@ export class TeamworkProjects{
             nodeList.push(new TaskItemNode(element.content,element["responsible-party-summary"],element["creator-avatar-url"], element.id,this));
         });
 
-        context.workspaceState.update("twp.data." + id + ".todoitems", nodeList);
-        context.workspaceState.update("twp.data.tasklists." + id + ".todoitems", Date.now())
+        context.globalState.update("twp.data." + id + ".todoitems", nodeList);
+        context.globalState.update("twp.data.tasklists." + id + ".todoitems", Date.now())
         return nodeList; 
     }
 
@@ -534,7 +536,7 @@ export class TeamworkProjects{
         var root = config.get("APIRoot");
 
 
-        var item = this._context.workspaceState.get("twp.data.task." + id);
+        var item = this._context.globalState.get("twp.data.task." + id);
         var todo;
         if(item && !force){
             todo = item;
@@ -555,7 +557,7 @@ export class TeamworkProjects{
             });
 
             todo = json.data["todo-item"];
-            this._context.workspaceState.update("twp.data.task." + id, todo);
+            this._context.globalState.update("twp.data.task." + id, todo);
         }
 
         var dateFormat = require('dateformat');

@@ -10,7 +10,7 @@ export class Utilities{
 
         var dif = endMoment.diff(startMoment,'minutes');
 
-        if(dif > compareDuration) return true;
+        if(dif > compareDuration) { return true; }
 
         return false;
     }

@@ -197,17 +197,20 @@ class TeamworkProjects {
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>Cat Coding</title>
                         <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
-                        <script nonce="${nonce}" src="${jqueryUri}"></script>
-                        <script nonce="${nonce}" src="${ACUri}"></script>
-                        <script nonce="${nonce}" src="${MarkdownUri}"></script>
-                        <script nonce="${nonce}" src="${scriptUri}"></script>
+
                         <link rel="stylesheet" href="${mainstyleUri}"  nonce="${nonce}"  type="text/css" />
                         <link rel="stylesheet" href="${ACStyleUri}"  nonce="${nonce}"  type="text/css" />
                     </head>
                     <body>
-                        <input type='hidden' id='cardData' value='${JSON.stringify(expandedTemplatePayload)}'>
                         <div id="exampleDiv"></div>
                         <div id="out"></div>
+                        <script nonce="${nonce}" src="${jqueryUri}"></script>
+                        <script nonce="${nonce}" src="${ACUri}"></script>
+                        <script nonce="${nonce}" src="${MarkdownUri}"></script>
+                        <script nonce="${nonce}" src="${scriptUri}"></script>
+                        <div id="divData" style='display:none;'>
+                            ${JSON.stringify(expandedTemplatePayload)}
+                        </div>
                     </body>
                     </html>`;
             }
@@ -307,8 +310,8 @@ class TeamworkProjects {
             }
             let nodeList = [];
             // Load from cache if duration less than 30 minutes
-            let cachedNodes = this._context.workspaceState.get("twp.data.projects");
-            let lastUpdated = this._context.workspaceState.get("twp.data.projects.lastUpdated");
+            let cachedNodes = this._context.globalState.get("twp.data.projects");
+            let lastUpdated = this._context.globalState.get("twp.data.projects.lastUpdated");
             if (cachedNodes && lastUpdated && !force) {
                 if (utilities_1.Utilities.DateCompare(lastUpdated, 30)) {
                     return cachedNodes;
@@ -334,8 +337,8 @@ class TeamworkProjects {
                 var item = new ProjectQuickTip_1.ProjectQuickTip(element.name, element.id, isPicked);
                 nodeList.push(item);
             });
-            this._context.workspaceState.update("twp.data.projects", nodeList);
-            this._context.workspaceState.update("twp.data.projects.lastUpdated", Date.now());
+            this._context.globalState.update("twp.data.projects", nodeList);
+            this._context.globalState.update("twp.data.projects.lastUpdated", Date.now());
             return nodeList;
         });
     }
@@ -386,8 +389,8 @@ class TeamworkProjects {
             // Lets check our cache first
             let nodeList = [];
             // Load from cache if duration less than 30 minutes
-            let cachedNodes = context.workspaceState.get("twp.data." + id + ".tasklists");
-            let lastUpdated = context.workspaceState.get("twp.data.tasklists." + id + ".lastUpdated");
+            let cachedNodes = context.globalState.get("twp.data." + id + ".tasklists");
+            let lastUpdated = context.globalState.get("twp.data.tasklists." + id + ".lastUpdated");
             if (cachedNodes && lastUpdated && !force) {
                 if (utilities_1.Utilities.DateCompare(lastUpdated, 30)) {
                     return cachedNodes;
@@ -408,8 +411,8 @@ class TeamworkProjects {
             json.data["todo-lists"].forEach(element => {
                 nodeList.push(new TaskListNode_1.TaskListNode(element.name, element.id, this));
             });
-            context.workspaceState.update("twp.data." + id + ".tasklists", nodeList);
-            context.workspaceState.update("twp.data.tasklists." + id + ".lastUpdated", Date.now());
+            context.globalState.update("twp.data." + id + ".tasklists", nodeList);
+            context.globalState.update("twp.data.tasklists." + id + ".lastUpdated", Date.now());
             return nodeList;
         });
     }
@@ -425,8 +428,8 @@ class TeamworkProjects {
             }
             let nodeList = [];
             // Load from cache if duration less than 30 minutes
-            let cachedNodes = context.workspaceState.get("twp.data." + id + ".todoitems");
-            let lastUpdated = context.workspaceState.get("twp.data.tasklists." + id + ".todoitems");
+            let cachedNodes = context.globalState.get("twp.data." + id + ".todoitems");
+            let lastUpdated = context.globalState.get("twp.data.tasklists." + id + ".todoitems");
             if (cachedNodes && lastUpdated && !force) {
                 if (utilities_1.Utilities.DateCompare(lastUpdated, 30)) {
                     return cachedNodes;
@@ -447,8 +450,8 @@ class TeamworkProjects {
             json.data["todo-items"].forEach(element => {
                 nodeList.push(new TaskItemNode_1.TaskItemNode(element.content, element["responsible-party-summary"], element["creator-avatar-url"], element.id, this));
             });
-            context.workspaceState.update("twp.data." + id + ".todoitems", nodeList);
-            context.workspaceState.update("twp.data.tasklists." + id + ".todoitems", Date.now());
+            context.globalState.update("twp.data." + id + ".todoitems", nodeList);
+            context.globalState.update("twp.data.tasklists." + id + ".todoitems", Date.now());
             return nodeList;
         });
     }
@@ -458,7 +461,7 @@ class TeamworkProjects {
             var config = vscode.workspace.getConfiguration('twp');
             var token = config.get("APIKey");
             var root = config.get("APIRoot");
-            var item = this._context.workspaceState.get("twp.data.task." + id);
+            var item = this._context.globalState.get("twp.data.task." + id);
             var todo;
             if (item && !force) {
                 todo = item;
@@ -477,7 +480,7 @@ class TeamworkProjects {
                     console.log(error);
                 });
                 todo = json.data["todo-item"];
-                this._context.workspaceState.update("twp.data.task." + id, todo);
+                this._context.globalState.update("twp.data.task." + id, todo);
             }
             var dateFormat = require('dateformat');
             todo['created-on'] = dateFormat(Date.parse(todo['created-on']), "ddd-mm-yyyy");
