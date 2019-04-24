@@ -1,0 +1,121 @@
+{
+	"name": "twp",
+	"displayName": "Teamwork Projects",
+	"description": "Teamwork Projects",
+	"publisher":"teamwork",
+	"version": "0.5.0",
+	"engines": {
+		"vscode": "^1.33.0"
+	},
+	"enableProposedApi": true,
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"*",
+		"onView:taskOutline"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"configuration": [
+			{
+				"type": "object",
+				"title": "Teamwork Projects Configuration",
+				"properties": {
+					"twp.APIKey": {
+						"type": "string",
+						"description": "Teamwork Projects API Key"
+					},
+					"twp.APIRoot": {
+						"type": "string",
+						"description": "Teamwork Projects Installation root eg: https://xxx.teamwork.com"
+					},
+					"twp.ShowTeamworkPanel": {
+						"default": false,
+						"type": "boolean",
+						"description": "Show native teamwork panel (false: uses adaptive card )"
+					}
+				}
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "twp_Outline",
+					"title": "Teamwork Projects",
+					"icon": "media/projects-white.svg"
+				}
+			]
+		},
+		"views": {
+			"twp_Outline": [
+				{
+					"id": "taskOutline",
+					"name": "Teamwork Projects"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "taskOutline.executeTask",
+				"title": "Execute"
+			},
+			{
+				"command": "taskOutline.showElement",
+				"title": "Show"
+			},
+			{
+				"command": "taskOutline.refresh",
+				"title": "Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "twp.SetProject",
+				"title": "Teamwork: Select Project for Repository"
+			},
+			{
+				"command": "twp.RefreshData",
+				"title": "Teamwork: Refresh all Project Data"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "taskOutline.refresh",
+					"when": "view == taskOutline",
+					"group": "navigation"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "npm run compile && node ./node_modules/vscode/bin/test"
+	},
+	"devDependencies": {
+		"typescript": "^3.3.1",
+		"vscode": "^1.1.28",
+		"tslint": "^5.12.1",
+		"@types/node": "^10.12.21",
+		"@types/mocha": "^2.2.42",
+		"@types/rimraf": "^2.0.2"
+	},
+	"dependencies": {
+		"adaptivecards": "^1.1.3",
+		"axios": "^0.18.0",
+		"dateformat": "^3.0.3",
+		"ftp": "^0.3.10",
+		"jsonc-parser": "^0.4.2",
+		"mkdirp": "^0.5.1",
+		"moment": "^2.24.0",
+		"request": "^2.81.0",
+		"rimraf": "^2.6.2",
+		"turndown": "^5.0.3"
+	}
+}

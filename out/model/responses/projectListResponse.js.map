@@ -1,0 +1,1 @@
+{"version":3,"file":"projectListResponse.js","sourceRoot":"","sources":["../../../src/model/responses/projectListResponse.ts"],"names":[],"mappings":";;AAaA,2CAA2C;AAC3C,MAAa,SAAS;IACX,MAAM,CAAC,qBAAqB,CAAC,IAAY;QAC5C,OAAO,IAAI,CAAC,KAAK,CAAC,IAAI,CAAC,CAAC;IAC5B,CAAC;IAEM,MAAM,CAAC,yBAAyB,CAAC,KAA0B;QAC9D,OAAO,IAAI,CAAC,SAAS,CAAC,KAAK,CAAC,CAAC;IACjC,CAAC;CACJ;AARD,8BAQC"}
