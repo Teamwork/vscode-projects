@@ -1,14 +1,34 @@
 {
 	"name": "twp",
 	"displayName": "Teamwork Projects",
-	"description": "Teamwork Projects",
+	"description": "Teamwork Projects extension for VSCode lets you link projects to your workspace and browser Teamwork Projects tasks.",
 	"publisher":"teamwork",
-	"version": "0.5.0",
+	"homepage": "https://www.teamwork.com",
+	"bugs": {
+	  "url": "https://github.com/teamwork/vscode-projects/issues",
+	  "email": "integrations@teamwork.com"
+	},
+	"icon": "media/projects.png",
+	"repository": {
+		"type": "Github",
+		"url": "https://github.com/Teamwork/vscode-projects"
+	},
+	"badges": [{
+		"description": "Build Status",
+		"href": "https://badgen.net/badge/Build/OK/green?icon=github",
+		"url": "https://github.com/Teamwork/vscode-projects"
+	},{
+		"description": "Come and visit us!",
+		"href": "https://badgen.net/badge/visit/us/green?icon=twitter",
+		"url": "https://twitter.com/Teamwork"
+	}
+	],
+	"version": "0.5.2",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
-	"enableProposedApi": true,
 	"categories": [
+		"Extension Packs",
 		"Other"
 	],
 	"activationEvents": [

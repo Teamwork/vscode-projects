@@ -42,6 +42,7 @@ class TeamworkProjects {
             if (this.panel) {
                 this.panel.reveal(column);
                 this.panel.title = taskItem.label;
+                this.panel.webview.html = this.GetWebViewContentLoader();
                 this.panel.webview.html = yield this.GetWebViewContent(taskItem.id);
             }
             else {
@@ -55,15 +56,17 @@ class TeamworkProjects {
                     light: vscode.Uri.file(path.join(this._extensionPath, 'media', 'projects-white.svg')),
                     dark: vscode.Uri.file(path.join(this._extensionPath, 'media', 'projects-white.svg'))
                 };
+                this.panel.webview.html = this.GetWebViewContentLoader();
                 this.panel.webview.html = yield this.GetWebViewContent(taskItem.id);
-                this.panel.webview.onDidReceiveMessage(message => {
+                this.panel.webview.onDidReceiveMessage((message) => __awaiter(this, void 0, void 0, function* () {
                     switch (message.command) {
                         case 'action':
+                            this.panel.webview.html = this.GetWebViewContentLoader();
                             var data = JSON.parse(message.text);
                             this.CreateComment(data.taskId, data.comment);
                             return;
                     }
-                });
+                }));
                 this.panel.onDidDispose(task => {
                     this.dispose();
                 });
@@ -117,6 +120,48 @@ class TeamworkProjects {
                 return yield this.GetWebViewContentAdaptiveCard(taskItem, force);
             }
         });
+    }
+    GetWebViewContentLoader() {
+        // jquery
+        const jqueryPath = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'jquery.min.js'));
+        const jqueryUri = jqueryPath.with({ scheme: 'vscode-resource' });
+        const nonce = this.getNonce();
+        const ACstyle = vscode.Uri.file(path.join(this._extensionPath, 'media/css', 'loader.css'));
+        const ACStyleUri = ACstyle.with({ scheme: 'vscode-resource' });
+        return `<!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Cat Coding</title>
+                        <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
+                        <script nonce="${nonce}" src="${jqueryUri}"></script>
+                        <link rel="stylesheet" href="${ACStyleUri}"  nonce="${nonce}"  type="text/css" />
+                    </head>
+                    <body style='background:white;height:800px;width:400px;'>
+                            <div id="app-loader" class="app-loader" >
+                            <svg class="app-loader__-logo" xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 160 128">
+                                <defs>
+                                    <style>
+                                        .cls-1 {
+                                            fill: #ff22b1;
+                                        }
+                        
+                                        .cls-2 {
+                                            fill: #1d1c39;
+                                        }
+                                    </style>
+                                </defs>
+                                <circle class="cls-1" cx="118" cy="86" r="12"></circle>
+                                <path class="cls-2" d="M160,48a32,32,0,0,0-32-32H63.59A20.07,20.07,0,0,0,44,0H20A20.06,20.06,0,0,0,0,20V96a32,32,0,0,0,32,32h96a32,32,0,0,0,32-32Zm-32,64H32A16,16,0,0,1,16,96V32H128a16,16,0,0,1,16,16V96A16,16,0,0,1,128,112Z"></path>
+                            </svg>
+                            <p class="w-app-preloading__installation-name">
+                                please wait...
+                            </p>
+                            <div class="app-loader__loading-bar"></div>
+                        </div>
+                    </body>
+                    </html>`;
     }
     GetWebViewContentAdaptiveCard(taskItem, force = false) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -269,7 +314,7 @@ class TeamworkProjects {
                     return cachedNodes;
                 }
             }
-            const url = root + '/tasks/projects.json?type=canAddItem&pageSize=50';
+            const url = root + '/tasks/projects.json?type=canAddItem&pageSize=200';
             let json = yield axios({
                 method: 'get',
                 url,
