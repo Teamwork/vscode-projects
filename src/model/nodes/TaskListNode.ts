@@ -3,12 +3,18 @@ import { INode } from "./INode";
 import { TaskItemNode } from "./TaskItemNode";
 import { TaskListConverter,TaskListResponse } from '../responses/TaskListResponse';
 import { TeamworkProjects } from "../../teamworkProjects";
+import { ProjectNode } from "./ProjectNode";
+import { TaskProvider } from "../../taskProvider";
 
 export class TaskListNode implements INode {
 
 
-    constructor(private readonly label: string, readonly id: number, private readonly twp: TeamworkProjects) {
-        
+    constructor(
+        private readonly label: string, 
+        readonly id: number,
+        public parentNode: ProjectNode,
+        private readonly provider: TaskProvider,  
+        private readonly twp: TeamworkProjects) {
     }
 
     public getTreeItem(): vscode.TreeItem {
@@ -21,7 +27,7 @@ export class TaskListNode implements INode {
 
     public async getChildren(context: vscode.ExtensionContext): Promise<INode[]> {
         try {
-            return await this.twp.getTaskItems(context,this.id);
+            return await this.twp.getTaskItems(context,this,this.provider);
           } catch (error) {
               vscode.window.showErrorMessage(error);
               return [];

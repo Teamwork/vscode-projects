@@ -1,0 +1,299 @@
+{
+    "type": "AdaptiveCard",
+    "body": [
+        {
+            "type": "Image",
+            "url": "https://s3.amazonaws.com/tw-desk/i/1/doclogo/197378.20190228210102000.197378.20190228210102000rlycm.png",
+            "size": "Large"
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                        {
+                            "type": "Column",
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "size": "Medium",
+                                    "weight": "Bolder",
+                                    "wrap": true,
+                                    "text": "Archived projects being added once clicked \"Add to all projects\""
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Need a simple toggle to either do or not do it",
+                                    "wrap": true
+                                },
+                                {
+                                    "type": "FactSet",
+                                    "facts": [
+                                        {
+                                            "title": "Project:",
+                                            "value": "[Teamwork Projects App](undefined/projects/13215117)"
+                                        },
+                                        {
+                                            "title": "TaskList:",
+                                            "value": "[Minor Bugs](undefined/tasklists/1136000)"
+                                        },
+                                        {
+                                            "title": "Assigned to:",
+                                            "value": "Rory O'Kelly"
+                                        },
+                                        {
+                                            "title": "Due date:",
+                                            "value": "20181114"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "ColumnSet",
+                                    "columns": [
+                                        {
+                                            "type": "Column",
+                                            "items": [
+                                                {
+                                                    "type": "Image",
+                                                    "style": "Person",
+                                                    "url": "https://s3.amazonaws.com/TWFiles/1/userAvatar/userlogo1493205327729946000.jpg",
+                                                    "size": "Small"
+                                                }
+                                            ],
+                                            "width": "auto"
+                                        },
+                                        {
+                                            "type": "Column",
+                                            "items": [
+                                                {
+                                                    "type": "TextBlock",
+                                                    "text": "Created Sat-11-2018",
+                                                    "isSubtle": true,
+                                                    "wrap": true,
+                                                    "size": "Small"
+                                                },
+                                                {
+                                                    "type": "TextBlock",
+                                                    "spacing": "None",
+                                                    "text": "by [Daniel Mackey](undefined/people/2)",
+                                                    "isSubtle": true,
+                                                    "wrap": true
+                                                }
+                                            ],
+                                            "width": "stretch"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "width": "stretch"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "Container",
+            "items": [
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                        {
+                            "type": "Column",
+                            "items": [
+                                {
+                                    "type": "Image",
+                                    "url": "https://tw-synthesiscore-beta.us.teamworkops.com/img/projects/file.png"
+                                }
+                            ],
+                            "width": "auto"
+                        },
+                        {
+                            "type": "Column",
+                            "items": [
+                                {
+                                    "type": "TextBlock",
+                                    "text": "Attachments:",
+                                    "spacing": "Medium",
+                                    "separator": true,
+                                    "color": "Accent",
+                                    "weight": "Bolder"
+                                }
+                            ],
+                            "width": "stretch"
+                        }
+                    ]
+                },
+                {
+                    "$when": true,
+                    "type": "Container",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "twpm_feedback:.html"
+                        },
+                        {
+                            "type": "Image"
+                        }
+                    ]
+                }
+            ],
+            "separator": true,
+            "spacing": "Medium"
+        },
+        {
+            "type": "ColumnSet",
+            "columns": [
+                {
+                    "type": "Column",
+                    "height": "stretch",
+                    "items": [
+                        {
+                            "type": "Image",
+                            "url": "https://tw-synthesiscore-beta.us.teamworkops.com/img/projects/comment.png"
+                        }
+                    ],
+                    "width": "auto"
+                },
+                {
+                    "type": "Column",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Comments:",
+                            "spacing": "Medium",
+                            "separator": true,
+                            "color": "Accent",
+                            "weight": "Bolder"
+                        }
+                    ],
+                    "width": "stretch"
+                }
+            ],
+            "separator": true
+        },
+        {
+            "type": "Container",
+            "height": "stretch",
+            "style": "emphasis",
+            "items": [
+
+                {
+                    "type": "ColumnSet",
+                    "columns": [
+                        {
+                            "type": "Column",
+                            "items": [
+                                {
+                                    "type": "Image",
+                                    "style": "Person",
+                                    "url": "https://s3.amazonaws.com/TWFiles/1/userAvatar/tf_7d5af3ea-984b-429d-ae8c-0dffbbf01523.avatar.jpg",
+                                    "size": "Small"
+                                }
+                            ],
+                            "width": "auto"
+                        },
+                        {
+                            "type": "Column",
+                            "horizontalAlignment": "Left",
+                            "spacing": "Small",
+                            "height": "stretch",
+                            "verticalContentAlignment": "Center",
+                            "items": [
+                                {
+                                    "type": "ColumnSet",
+                                    "columns": [
+                                        {
+                                            "type": "Column",
+                                            "items": [
+                                                {
+                                                    "type": "TextBlock",
+                                                    "text": "[Rory O'Kelly](undefined/people/undefined) ( Teamwork )"
+                                                }
+                                            ],
+                                            "width": "auto"
+                                        },
+                                        {
+                                            "type": "Column",
+                                            "items": [
+                                                {
+                                                    "type": "TextBlock",
+                                                    "text": "Thu-04-2019 02:01",
+                                                    "isSubtle": true
+                                                }
+                                            ],
+                                            "width": "stretch"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "width": "stretch"
+                        }
+                    ]
+                },
+                {
+                    "type": "TextBlock",
+                    "text": "@danielm Archived Projects are currently not shown in the user projects access modal, so rather than a toggle should we just exclude them from the \\\"add to all\\\" query?",
+                    "wrap": true
+                }
+            ],
+            "separator": true
+        }
+    ],
+    "actions": [
+        {
+            "type": "Action.ShowCard",
+            "title": "Add Comment",
+            "card": {
+                "type": "AdaptiveCard",
+                "body": [
+                    {
+                        "type": "ColumnSet",
+                        "columns": [
+                            {
+                                "type": "Column",
+                                "items": [
+                                    {
+                                        "type": "Image",
+                                        "url": "https://tw-synthesiscore-beta.us.teamworkops.com/img/projects/comment_notify.png"
+                                    }
+                                ],
+                                "width": "auto"
+                            },
+                            {
+                                "type": "Column",
+                                "items": [
+                                    {
+                                        "type": "TextBlock",
+                                        "text": "Comment"
+                                    }
+                                ],
+                                "width": "stretch"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "comment",
+                        "type": "Input.Text",
+                        "placeholder": "Your comment",
+                        "isMultiline": true
+                    }
+                ],
+                "actions": [
+                    {
+                        "type": "Action.Submit",
+                        "title": "Submit",
+                        "data": {
+                            "taskId": 13215117,
+                            "type": "comment"
+                        }
+                    }
+                ],
+                "version": "1.0",
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
+            }
+        }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.1"
+}

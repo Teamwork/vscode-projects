@@ -1,9 +1,10 @@
 
 import * as vscode from 'vscode';
-
+import * as path from 'path';
 import { TaskProvider } from './taskProvider';
 import { TeamworkProjects } from './teamworkProjects';
 import { ProjectConfig } from './model/projectConfig';
+import { TaskItemNode } from './model/nodes/TaskItemNode';
 
 
 
@@ -20,6 +21,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	twp.statusBarItem.show();
 	twp.statusBarItem.text = "Teamwork: " + projectConfig.ActiveProjectName;
 	twp.statusBarItem.tooltip =  "Click to refresh Project Data";
+
 	setTimeout( () => twp.RefreshData(),1*60*1000);
 
 	vscode.commands.registerCommand('taskOutline.refresh', task => {
@@ -28,16 +30,23 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	vscode.commands.registerCommand('taskOutline.showElement',task  => {
 		twp.openResource(task);
-	})
-
-	vscode.commands.registerCommand('twp.SetProject', task => {
-		twp.SelectProject();
 	});
 
+	//vscode.commands.registerCommand('twp.assignTask',(task:TaskItemNode)  => {
+	//	twp.AssignTask(task);
+	//	taskProvider.refresh(task);
+	//	vscode.window.showInformationMessage("Task assigned");
+	//});
 
-	vscode.commands.registerCommand('twp.RefreshData', task =>{
-		twp.RefreshData();
+	vscode.commands.registerCommand('twp.completeTask',(task:TaskItemNode) => {
+		twp.CompleteTask(task.id);
+		task.isComplete = true;
+		taskProvider.refresh(task);
+		vscode.window.showInformationMessage("Task completed");
 	});
+
+	vscode.commands.registerCommand('twp.SetProject',  task => {twp.SelectProject();});
+	vscode.commands.registerCommand('twp.RefreshData', task => {twp.RefreshData();});
 
 
 	// Refresh data once every 30 minutes

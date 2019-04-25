@@ -17,8 +17,12 @@ class TaskProvider {
         this.twp = twp;
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+        this.ProjectNodes = [];
     }
-    refresh() {
+    refresh(node) {
+        if (node) {
+            this._onDidChangeTreeData.fire(node);
+        }
         this._onDidChangeTreeData.fire();
     }
     getChildren(element) {
@@ -29,7 +33,9 @@ class TaskProvider {
                     var config = yield this.twp.GetProjectForRepository();
                     if (config) {
                         config.Projects.forEach(element => {
-                            items.push(new ProjectNode_1.ProjectNode("Project: " + element.Name, element.Id, this.twp));
+                            var node = new ProjectNode_1.ProjectNode("Project: " + element.Name, element.Id, null, this, this.twp);
+                            this.ProjectNodes.push(node);
+                            items.push(node);
                         });
                         return items;
                     }

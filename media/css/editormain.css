@@ -39,19 +39,19 @@ a.ac-anchor {
 }
 
 a.ac-anchor:link {
-    color: #005A9E;
+    color: slategray;
 }
 
 a.ac-anchor:visited {
-    color: #005A9E;
+    color: slategray;
 }
 
 a.ac-anchor:link:active {
-    color: #004D84;
+    color: slategray;
 }
 
 a.ac-anchor:visited:active {
-    color: #004D84;
+    color: slategray;
 }
 
 .ac-container.ac-selectable, .ac-columnSet.ac-selectable {

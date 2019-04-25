@@ -3,20 +3,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const path = require("path");
 class TaskItemNode {
-    constructor(label, description, icon, id, twp) {
+    constructor(label, description, icon, id, priority, hasDesk, isComplete, assignedTo, parentNode, contextValue, provider, twp) {
         this.label = label;
         this.description = description;
         this.icon = icon;
         this.id = id;
+        this.priority = priority;
+        this.hasDesk = hasDesk;
+        this.isComplete = isComplete;
+        this.assignedTo = assignedTo;
+        this.parentNode = parentNode;
+        this.contextValue = contextValue;
+        this.provider = provider;
         this.twp = twp;
     }
     getTreeItem() {
         return {
             label: this.label,
             description: this.description,
-            iconPath: vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', 'projects-white.svg')),
+            iconPath: this.getIcon(this.priority, this.hasDesk, this.isComplete),
             collapsibleState: vscode.TreeItemCollapsibleState.None,
-            contextValue: "taskItem-label",
+            contextValue: this.contextValue,
             command: {
                 command: "taskOutline.showElement",
                 title: "",
@@ -26,6 +33,24 @@ class TaskItemNode {
     }
     getChildren() {
         return [];
+    }
+    getIcon(priority, hasDesk = false, isComplete = false) {
+        if (isComplete) {
+            return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', 'task.svg'));
+        }
+        if (hasDesk) {
+            return {
+                light: path.join(this.twp._context.extensionPath, 'media/light', 'twdesk_light.svg'),
+                dark: path.join(this.twp._context.extensionPath, 'media/dark', 'twdesk_dark.svg'),
+            };
+        }
+        if (priority === "") {
+            return ""; //return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', 'task.svg'));
+        }
+        return {
+            light: path.join(this.twp._context.extensionPath, 'media/light', `task_priority_${priority}.svg`),
+            dark: path.join(this.twp._context.extensionPath, 'media/dark', `task_priority_${priority}.svg`),
+        };
     }
 }
 exports.TaskItemNode = TaskItemNode;

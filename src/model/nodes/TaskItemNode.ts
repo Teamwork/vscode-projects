@@ -2,13 +2,22 @@ import * as vscode from "vscode";
 import { INode } from "./INode";
 import { TeamworkProjects } from "../../teamworkProjects";
 import * as path from 'path';
-export class TaskItemNode implements INode {
+import { TaskListNode } from "./TaskListNode";
+import { TaskProvider } from "../../taskProvider";
 
+export class TaskItemNode implements INode {
     constructor(
-        public readonly label: string,
-        private readonly description: string, 
-        private readonly icon: string,
-        public readonly id: number, 
+        public label: string,
+        private description: string, 
+        private icon: string | vscode.Uri | {light: string, dark: string},
+        public id: number, 
+        public priority: string,
+        public hasDesk: boolean,
+        public isComplete: boolean,
+        public assignedTo: string,
+        public parentNode: TaskListNode,
+        public contextValue: string,
+        private readonly provider: TaskProvider, 
         private readonly twp: TeamworkProjects) {
     }
 
@@ -16,9 +25,9 @@ export class TaskItemNode implements INode {
         return {
             label: this.label,
             description: this.description,
-            iconPath: vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', 'projects-white.svg')),
+            iconPath: this.getIcon(this.priority,this.hasDesk, this.isComplete),
             collapsibleState: vscode.TreeItemCollapsibleState.None,        
-            contextValue: "taskItem-label",
+            contextValue: this.contextValue,
             command: {
                 command: "taskOutline.showElement",
                 title: "",
@@ -30,4 +39,30 @@ export class TaskItemNode implements INode {
     public getChildren(): INode[] {
             return  [];
     }
+
+    public getIcon(priority: string, hasDesk: boolean = false, isComplete: boolean = false) {
+
+          if(isComplete){
+            return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', 'task.svg')); 
+        }
+
+        if(hasDesk){
+            return {
+                light: path.join(this.twp._context.extensionPath, 'media/light', 'twdesk_light.svg'),
+                dark: path.join(this.twp._context.extensionPath, 'media/dark', 'twdesk_dark.svg'),
+            };
+        }
+
+        if(priority === ""){
+            return ""; //return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', 'task.svg'));
+        }
+
+        return {
+            light: path.join(this.twp._context.extensionPath, 'media/light', `task_priority_${priority}.svg`),
+            dark: path.join(this.twp._context.extensionPath, 'media/dark', `task_priority_${priority}.svg`),
+        };
+
+
+    }
+
 }

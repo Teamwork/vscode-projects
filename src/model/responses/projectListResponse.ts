@@ -1,3 +1,5 @@
+import { Person } from "./peopleResponse";
+
 export interface ProjectListResponse {
     STATUS?:   string;
     projects?: Project[];
@@ -9,6 +11,7 @@ export interface Project {
     id?:          string;
     status?:      string;
     companyId?:   string;
+    people?: Person[];
 }
 
 // Converts JSON strings to/from your types

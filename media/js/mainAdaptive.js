@@ -302,10 +302,10 @@
         
             // Adaptive Cards - Actions
             adaptiveCard.onExecuteAction = function (action) {
-                vscode.postMessage({
-                    command: 'action',
-                    text: JSON.stringify(action._processedData)
-                })
+                  vscode.postMessage({
+                     command: 'action',
+                     text: JSON.stringify(action._processedData)
+                 })
             };
 
             var cardPayload = $('#divData').text();

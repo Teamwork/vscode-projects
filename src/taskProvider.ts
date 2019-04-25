@@ -12,10 +12,17 @@ export class TaskProvider implements vscode.TreeDataProvider<INode> {
 
     constructor(private context: vscode.ExtensionContext, private twp: TeamworkProjects) {
   
+        this.ProjectNodes = [];
     }
 
+    public ProjectNodes : ProjectNode[]
 
-	refresh(): void {
+	refresh(node?: INode): void {
+
+        if(node){
+            this._onDidChangeTreeData.fire(node);
+        }
+
 		this._onDidChangeTreeData.fire();
 	}
 
@@ -25,9 +32,10 @@ export class TaskProvider implements vscode.TreeDataProvider<INode> {
                 const items = [];
                 var config = await this.twp.GetProjectForRepository();
                 if(config){
-
-                    config.Projects.forEach(element => {
-                        items.push(new ProjectNode("Project: " + element.Name,element.Id,this.twp));
+                     config.Projects.forEach(element => {
+                        var node = new ProjectNode("Project: " + element.Name,element.Id,null,this,this.twp);
+                        this.ProjectNodes.push(node);
+                        items.push(node);
                     });
 
                     return items;

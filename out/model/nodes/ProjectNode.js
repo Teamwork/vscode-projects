@@ -9,14 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
+const path = require("path");
 class ProjectNode {
-    constructor(label, id, twp) {
+    constructor(label, id, Project, provider, twp) {
         this.label = label;
         this.id = id;
+        this.Project = Project;
+        this.provider = provider;
         this.twp = twp;
     }
     getTreeItem() {
         return {
+            iconPath: vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', `projects-white.svg`)),
             label: this.label,
             collapsibleState: vscode.TreeItemCollapsibleState.Collapsed
         };
@@ -24,7 +28,7 @@ class ProjectNode {
     getChildren(context) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.twp.getTaskLists(context, this.id);
+                return yield this.twp.getTaskLists(context, this);
             }
             catch (error) {
                 vscode.window.showErrorMessage(error);

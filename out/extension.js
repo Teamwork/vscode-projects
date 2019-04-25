@@ -30,12 +30,19 @@ function activate(context) {
         vscode.commands.registerCommand('taskOutline.showElement', task => {
             twp.openResource(task);
         });
-        vscode.commands.registerCommand('twp.SetProject', task => {
-            twp.SelectProject();
+        //vscode.commands.registerCommand('twp.assignTask',(task:TaskItemNode)  => {
+        //	twp.AssignTask(task);
+        //	taskProvider.refresh(task);
+        //	vscode.window.showInformationMessage("Task assigned");
+        //});
+        vscode.commands.registerCommand('twp.completeTask', (task) => {
+            twp.CompleteTask(task.id);
+            task.isComplete = true;
+            taskProvider.refresh(task);
+            vscode.window.showInformationMessage("Task completed");
         });
-        vscode.commands.registerCommand('twp.RefreshData', task => {
-            twp.RefreshData();
-        });
+        vscode.commands.registerCommand('twp.SetProject', task => { twp.SelectProject(); });
+        vscode.commands.registerCommand('twp.RefreshData', task => { twp.RefreshData(); });
         // Refresh data once every 30 minutes
         setInterval(twp.RefreshData, 30 * 60 * 1000);
     });

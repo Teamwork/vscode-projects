@@ -10,9 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 class TaskListNode {
-    constructor(label, id, twp) {
+    constructor(label, id, parentNode, provider, twp) {
         this.label = label;
         this.id = id;
+        this.parentNode = parentNode;
+        this.provider = provider;
         this.twp = twp;
     }
     getTreeItem() {
@@ -25,7 +27,7 @@ class TaskListNode {
     getChildren(context) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.twp.getTaskItems(context, this.id);
+                return yield this.twp.getTaskItems(context, this, this.provider);
             }
             catch (error) {
                 vscode.window.showErrorMessage(error);
