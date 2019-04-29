@@ -15,7 +15,11 @@ This extension contributes the following settings:
 * Teamwork Embedded view not working due to CORS issues
 
 ## Release Notes
-### 0.5.5
+### 0.5.7
+** This is a pre-release version and under development **
+* fixed logo not visible
+
+### 0.5.6
 ** This is a pre-release version and under development **
 * fixed some tasks not being displayed properly
 * fixed a few display issues on the task info screen

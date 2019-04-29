@@ -22,7 +22,7 @@
 		"href": "https://badgen.net/badge/visit/us/green?icon=twitter",
 		"url": "https://twitter.com/Teamwork"
 	}],
-	"version": "0.5.6",
+	"version": "0.5.7",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
