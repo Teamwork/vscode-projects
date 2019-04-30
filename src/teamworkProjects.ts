@@ -477,10 +477,10 @@ export class TeamworkProjects{
         let nodeList: ProjectQuickTip[] = []; 
 
         let projects = await this.GetProjects(force,includePeople);
-   
-        projects.forEach(element => {
+
+        this.Projects.forEach(element => {
             var isPicked = false;
-            if(selected && selected.find(p=>p.Id.toString() === element.id)){
+            if(selected && selected.length > 0 && selected.find(p=>p.Id.toString() === element.id)){
                 isPicked = true;
             }
             var item = new ProjectQuickTip(element.name, element.id,isPicked);
@@ -525,11 +525,18 @@ export class TeamworkProjects{
     public async GetProjectForRepository(): Promise<ProjectConfig>{
         try{
             var path = vscode.workspace.rootPath + "/twp.json";
-            let config = JSON.parse(fs.readFileSync(path, 'utf8'));
+
+            if (fs.existsSync(path)) {
+                let config = JSON.parse(fs.readFileSync(path, 'utf8'));
     
-            if(config){
-                return config;
-            }
+                if(config){
+                    return config;
+                }
+              }else{
+                  return new ProjectConfig(null);
+              }
+
+ 
         }catch(error){
             console.error(error);
             return new ProjectConfig(null);
@@ -548,7 +555,7 @@ export class TeamworkProjects{
             
             var items : ProjectConfigEntry[] = [];
             projectItem.forEach(async element =>{
-                items.push(new ProjectConfigEntry(element.label,element.id));
+                items.push(new ProjectConfigEntry(element.label,element.id,element));
             })
             var config = new ProjectConfig(items);
             var path = vscode.workspace.rootPath + "/twp.json";

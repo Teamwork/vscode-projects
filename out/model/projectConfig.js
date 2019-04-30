@@ -15,9 +15,10 @@ class ProjectConfig {
 }
 exports.ProjectConfig = ProjectConfig;
 class ProjectConfigEntry {
-    constructor(Name, Id) {
+    constructor(Name, Id, Project) {
         this.Name = Name;
         this.Id = Id;
+        this.Project = Project;
     }
 }
 exports.ProjectConfigEntry = ProjectConfigEntry;

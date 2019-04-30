@@ -407,9 +407,9 @@ class TeamworkProjects {
         return __awaiter(this, void 0, void 0, function* () {
             let nodeList = [];
             let projects = yield this.GetProjects(force, includePeople);
-            projects.forEach(element => {
+            this.Projects.forEach(element => {
                 var isPicked = false;
-                if (selected && selected.find(p => p.Id.toString() === element.id)) {
+                if (selected && selected.length > 0 && selected.find(p => p.Id.toString() === element.id)) {
                     isPicked = true;
                 }
                 var item = new ProjectQuickTip_1.ProjectQuickTip(element.name, element.id, isPicked);
@@ -449,9 +449,14 @@ class TeamworkProjects {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 var path = vscode.workspace.rootPath + "/twp.json";
-                let config = JSON.parse(fs.readFileSync(path, 'utf8'));
-                if (config) {
-                    return config;
+                if (fs.existsSync(path)) {
+                    let config = JSON.parse(fs.readFileSync(path, 'utf8'));
+                    if (config) {
+                        return config;
+                    }
+                }
+                else {
+                    return new projectConfig_1.ProjectConfig(null);
                 }
             }
             catch (error) {
@@ -467,7 +472,7 @@ class TeamworkProjects {
             if (projectItem) {
                 var items = [];
                 projectItem.forEach((element) => __awaiter(this, void 0, void 0, function* () {
-                    items.push(new projectConfig_1.ProjectConfigEntry(element.label, element.id));
+                    items.push(new projectConfig_1.ProjectConfigEntry(element.label, element.id, element));
                 }));
                 var config = new projectConfig_1.ProjectConfig(items);
                 var path = vscode.workspace.rootPath + "/twp.json";

@@ -33,7 +33,7 @@ class TaskProvider {
                     var config = yield this.twp.GetProjectForRepository();
                     if (config) {
                         config.Projects.forEach(element => {
-                            var node = new ProjectNode_1.ProjectNode("Project: " + element.Name, element.Id, null, this, this.twp);
+                            var node = new ProjectNode_1.ProjectNode("Project: " + element.Name, element.Id, element.Project, this, this.twp);
                             this.ProjectNodes.push(node);
                             items.push(node);
                         });

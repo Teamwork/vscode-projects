@@ -1,3 +1,5 @@
+import { Project } from "./responses/projectListResponse";
+
 export class ProjectConfig{
     public ActiveProjectName : string;
     public ActiveProjectId: string;
@@ -18,9 +20,11 @@ export class ProjectConfig{
 export class ProjectConfigEntry{
     public readonly Name: string;
     public readonly Id: number;
+    public readonly Project: Project;
     
-    constructor(Name,Id) {
+    constructor(Name,Id, Project) {
         this.Name = Name;
         this.Id = Id;
+        this.Project = Project;
     }
 }

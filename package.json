@@ -13,16 +13,19 @@
 		"type": "Github",
 		"url": "https://github.com/Teamwork/vscode-projects"
 	},
-	"badges": [{
-		"description": "Build Status",
-		"href": "https://badgen.net/badge/Build/OK/green?icon=github",
-		"url": "https://github.com/Teamwork/vscode-projects"
-	}, {
-		"description": "Come and visit us!",
-		"href": "https://badgen.net/badge/visit/us/green?icon=twitter",
-		"url": "https://twitter.com/Teamwork"
-	}],
-	"version": "0.5.7",
+	"badges": [
+		{
+			"description": "Build Status",
+			"href": "https://badgen.net/badge/Build/OK/green?icon=github",
+			"url": "https://github.com/Teamwork/vscode-projects"
+		},
+		{
+			"description": "Come and visit us!",
+			"href": "https://badgen.net/badge/visit/us/green?icon=twitter",
+			"url": "https://twitter.com/Teamwork"
+		}
+	],
+	"version": "0.5.8",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
@@ -36,40 +39,45 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"configuration": [{
-			"type": "object",
-			"title": "Teamwork Projects Configuration",
-			"properties": {
-				"twp.APIKey": {
-					"type": "string",
-					"description": "Teamwork Projects API Key"
-				},
-				"twp.APIRoot": {
-					"type": "string",
-					"description": "Teamwork Projects Installation root eg: https://xxx.teamwork.com"
-				},
-				"twp.ShowTeamworkPanel": {
-					"default": false,
-					"type": "boolean",
-					"description": "Show native teamwork panel (false: uses adaptive card )"
+		"configuration": [
+			{
+				"type": "object",
+				"title": "Teamwork Projects Configuration",
+				"properties": {
+					"twp.APIKey": {
+						"type": "string",
+						"description": "Teamwork Projects API Key"
+					},
+					"twp.APIRoot": {
+						"type": "string",
+						"description": "Teamwork Projects Installation root eg: https://xxx.teamwork.com"
+					},
+					"twp.ShowTeamworkPanel": {
+						"default": false,
+						"type": "boolean",
+						"description": "Show native teamwork panel (false: uses adaptive card )"
+					}
 				}
 			}
-		}],
+		],
 		"viewsContainers": {
-			"activitybar": [{
-				"id": "twp_Outline",
-				"title": "Teamwork Projects",
-				"icon": "media/projects-white.svg"
-			}]
+			"activitybar": [
+				{
+					"id": "twp_Outline",
+					"title": "Teamwork Projects",
+					"icon": "media/projects-white.svg"
+				}
+			]
 		},
 		"views": {
-			"twp_Outline": [{
-				"id": "taskOutline",
-				"name": "Teamwork Projects"
-			}]
+			"twp_Outline": [
+				{
+					"id": "taskOutline",
+					"name": "Teamwork Projects"
+				}
+			]
 		},
 		"commands": [
-
 			{
 				"command": "twp.completeTask",
 				"title": "Complete Task",
@@ -101,7 +109,8 @@
 			{
 				"command": "twp.RefreshData",
 				"title": "Teamwork: Refresh all Project Data"
-			}, {
+			},
+			{
 				"command": "twp.editTaskFilter",
 				"title": "Filter",
 				"icon": {
@@ -110,12 +119,12 @@
 				}
 			},
 			{
-			  "command": "twp.clearTaskFilter",
-			  "title": "Clear Filter",
-			  "icon": {
-				"light": "resources/icons/clear_filter_light.svg",
-				"dark": "resources/icons/clear_filter_dark.svg"
-			  }
+				"command": "twp.clearTaskFilter",
+				"title": "Clear Filter",
+				"icon": {
+					"light": "resources/icons/clear_filter_light.svg",
+					"dark": "resources/icons/clear_filter_dark.svg"
+				}
 			}
 		],
 		"menus": {
@@ -126,11 +135,13 @@
 					"group": "inline"
 				}
 			],
-			"view/title": [{
-				"command": "taskOutline.refresh",
-				"when": "view == taskOutline",
-				"group": "navigation"
-			}]
+			"view/title": [
+				{
+					"command": "taskOutline.refresh",
+					"when": "view == taskOutline",
+					"group": "navigation"
+				}
+			]
 		}
 	},
 	"scripts": {
@@ -158,6 +169,7 @@
 		"moment": "^2.24.0",
 		"request": "^2.81.0",
 		"rimraf": "^2.6.2",
-		"turndown": "^5.0.3"
+		"turndown": "^5.0.3",
+		"vsce": "^1.59.0"
 	}
 }
