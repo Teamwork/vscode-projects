@@ -567,6 +567,22 @@ export class TeamworkProjects{
         }
     }
 
+    public async SelectActiveProject() : Promise<ProjectConfig>{
+        let savedConfig: ProjectConfig = await this.GetProjectForRepository();
+
+        const projectItem = await vscode.window.showQuickPick(
+            this.GetProjectQuickTips(true,savedConfig.Projects),
+            { placeHolder: "Select Active Project", ignoreFocusOut: true, canPickMany: false },
+        );
+        if (projectItem) {
+            
+            var path = vscode.workspace.rootPath + "/twp.json";
+            let data = JSON.stringify(savedConfig);  
+            fs.writeFileSync(path, data);
+            return savedConfig;
+        }
+    }
+
  
     public async getTaskLists(context: vscode.ExtensionContext, node: ProjectNode,id: number = 0, force: boolean = false) : Promise<INode[]>{
         var statusBarText = this.statusBarItem.text;

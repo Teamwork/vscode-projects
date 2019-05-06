@@ -484,6 +484,18 @@ class TeamworkProjects {
             }
         });
     }
+    SelectActiveProject() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let savedConfig = yield this.GetProjectForRepository();
+            const projectItem = yield vscode.window.showQuickPick(this.GetProjectQuickTips(true, savedConfig.Projects), { placeHolder: "Select Active Project", ignoreFocusOut: true, canPickMany: false });
+            if (projectItem) {
+                var path = vscode.workspace.rootPath + "/twp.json";
+                let data = JSON.stringify(savedConfig);
+                fs.writeFileSync(path, data);
+                return savedConfig;
+            }
+        });
+    }
     getTaskLists(context, node, id = 0, force = false) {
         return __awaiter(this, void 0, void 0, function* () {
             var statusBarText = this.statusBarItem.text;
