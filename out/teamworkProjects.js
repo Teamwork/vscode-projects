@@ -199,24 +199,24 @@ class TeamworkProjects {
                         <script nonce="${nonce}" src="${jqueryUri}"></script>
                         <link rel="stylesheet" href="${ACStyleUri}"  nonce="${nonce}"  type="text/css" />
                     </head>
-                    <body style='background:white;height:800px;width:400px;'>
+                    <body style='background:#2D2B2C;height:800px;width:400px;'>
                             <div id="app-loader" class="app-loader" >
                             <svg class="app-loader__-logo" xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 160 128">
                                 <defs>
                                     <style>
                                         .cls-1 {
-                                            fill: #ff22b1;
+                                            fill: #ffffff;
                                         }
                         
                                         .cls-2 {
-                                            fill: #1d1c39;
+                                            fill: #ffffff;
                                         }
                                     </style>
                                 </defs>
                                 <circle class="cls-1" cx="118" cy="86" r="12"></circle>
                                 <path class="cls-2" d="M160,48a32,32,0,0,0-32-32H63.59A20.07,20.07,0,0,0,44,0H20A20.06,20.06,0,0,0,0,20V96a32,32,0,0,0,32,32h96a32,32,0,0,0,32-32Zm-32,64H32A16,16,0,0,1,16,96V32H128a16,16,0,0,1,16,16V96A16,16,0,0,1,128,112Z"></path>
                             </svg>
-                            <p class="w-app-preloading__installation-name">
+                            <p class="w-app-preloading__installation-name" style='color:#ffffff'>
                                 please wait...
                             </p>
                             <div class="app-loader__loading-bar"></div>
@@ -520,7 +520,8 @@ class TeamworkProjects {
                 console.log(error);
             });
             json.data["todo-lists"].forEach(element => {
-                nodeList.push(new TaskListNode_1.TaskListNode(element.name, element.id, node, node.provider, this));
+                var provider = node !== null ? null : node.provider;
+                nodeList.push(new TaskListNode_1.TaskListNode(element.name, element.id, node, provider, this));
             });
             context.globalState.update("twp.data." + idToUse + ".tasklists", nodeList);
             context.globalState.update("twp.data.tasklists." + idToUse + ".lastUpdated", Date.now());

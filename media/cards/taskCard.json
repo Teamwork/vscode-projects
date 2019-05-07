@@ -95,24 +95,28 @@
 		},
 		{
 			"type": "Container",
+			"spacing":"Medium",
 			"items": [{
 					"type": "ColumnSet",
+					"spacing":"Medium",
 					"columns": [{
 							"type": "Column",
+							"spacing":"Medium",
 							"items": [{
 								"type": "Image",
+								"spacing":"medium",
 								"url": "https://tw-synthesiscore-beta.us.teamworkops.com/img/projects/file.png"
 							}],
 							"width": "auto"
 						},
 						{
 							"type": "Column",
+							"spacing":"Medium",
 							"items": [{
 								"type": "TextBlock",
 								"text": "Attachments:",
-								"spacing": "Medium",
+								"spacing":"Medium",
 								"separator": true,
-								"color": "Accent",
 								"weight": "Bolder"
 							}],
 							"width": "stretch"
@@ -134,14 +138,16 @@
 					]
 				}
 			],
-			"spacing": "Medium",
 			"separator": true
 		},
 		{
 			"type": "Container",
+			"spacing":"Medium",
 			"items": [{
 				"type": "ColumnSet",
+				"spacing":"Medium",
 				"columns": [{
+					    "spacing":"Medium",
 						"type": "Column",
 						"height": "stretch",
 						"items": [{
@@ -151,20 +157,18 @@
 						"width": "auto"
 					},
 					{
+						"spacing":"Medium",
 						"type": "Column",
 						"items": [{
 							"type": "TextBlock",
 							"text": "Comments:",
-							"spacing": "Medium",
 							"separator": true,
-							"color": "Accent",
 							"weight": "Bolder"
 						}],
 						"width": "stretch"
 					}
 				]
 			}],
-			"spacing": "Medium",
 			"separator": true
 		},
 		{
@@ -221,7 +225,6 @@
 					"wrap": true
 				}
 			],
-			"spacing": "Medium",
 			"style": "emphasis"
 		}
 	],

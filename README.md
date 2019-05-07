@@ -15,6 +15,10 @@ This extension contributes the following settings:
 * Teamwork Embedded view not working due to CORS issues
 
 ## Release Notes
+### 0.5.89
+** This is a pre-release version and under development **
+* just css fixes and changes to host config
+
 ### 0.5.8
 ** This is a pre-release version and under development **
 * fixed initial project selection for new folders
