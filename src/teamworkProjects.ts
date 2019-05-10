@@ -19,8 +19,9 @@ export class TeamworkProjects{
     panel: vscode.WebviewPanel | undefined;
     public statusBarItem: vscode.StatusBarItem;
     public readonly _context: vscode.ExtensionContext;
-
     public Projects: Project[];
+    public Config : ProjectConfig;
+
 
     constructor(private context: vscode.ExtensionContext,extensionPath: string) {
         this._context = context;
@@ -155,7 +156,6 @@ export class TeamworkProjects{
          this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
 
     }
-
 
     public async GetPeopleQuickTips(people: Person[], assignedTo: String[]) : Promise<PersonQuickTip[]>{
         
@@ -403,9 +403,11 @@ export class TeamworkProjects{
 
 
         this.statusBarItem.text = "Teamwork: Updating Projects";
-        let project : ProjectConfig = await this.GetProjectForRepository();
+        if(this.Config === null) {
+            this.Config = await this.GetProjectForRepository();
+        }  
 
-        project.Projects.forEach(async element => {
+        this.Config.Projects.forEach(async element => {
             this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
             var taskLists = await this.getTaskLists(this._context,null,element.Id,true)
             
@@ -413,7 +415,7 @@ export class TeamworkProjects{
             taskLists.forEach(async subelement =>{
                 var taskItems = await this.getTaskItems(this._context,null,null,subelement.id,true);
             });
-            this.statusBarItem.text = "Teamwork: " + project.ActiveProjectName;
+            this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
         });
 
 
@@ -492,7 +494,6 @@ export class TeamworkProjects{
         return nodeList;
     }
 
-
     public async GetPeopleInProject(force: boolean = false,id: string) : Promise<Person[]>{
 
         var axios = require("axios");
@@ -520,7 +521,6 @@ export class TeamworkProjects{
 
         return json.people; 
     }
-
 
     public async GetProjectForRepository(): Promise<ProjectConfig>{
         try{
@@ -561,6 +561,8 @@ export class TeamworkProjects{
             var path = vscode.workspace.rootPath + "/twp.json";
             let data = JSON.stringify(config);  
             fs.writeFileSync(path, data);
+
+            
             this.RefreshData();
             vscode.commands.executeCommand("taskOutline.refresh");  
             return config;
@@ -570,15 +572,32 @@ export class TeamworkProjects{
     public async SelectActiveProject() : Promise<ProjectConfig>{
         let savedConfig: ProjectConfig = await this.GetProjectForRepository();
 
-        const projectItem = await vscode.window.showQuickPick(
-            this.GetProjectQuickTips(true,savedConfig.Projects),
+        let nodeList: ProjectQuickTip[] = []; 
+        savedConfig.Projects.forEach(element => {
+            var isPicked = false;
+            if(parseInt(savedConfig.ActiveProjectId) === element.Id){
+                isPicked = true;
+            }
+            var item = new ProjectQuickTip(element.Name, element.Id.toString(),isPicked);
+            nodeList.push(item);
+        });
+
+        const projectItem = await vscode.window.showQuickPick(nodeList,
             { placeHolder: "Select Active Project", ignoreFocusOut: true, canPickMany: false },
         );
         if (projectItem) {
             
+            savedConfig.ActiveProjectId = projectItem.id;
+            savedConfig.ActiveProjectName = projectItem.name;
+            this.statusBarItem.text = "Active Project: " + projectItem;
+
             var path = vscode.workspace.rootPath + "/twp.json";
             let data = JSON.stringify(savedConfig);  
             fs.writeFileSync(path, data);
+
+            this.RefreshData();
+            vscode.commands.executeCommand("taskOutline.refresh");  
+
             return savedConfig;
         }
     }
@@ -612,7 +631,7 @@ export class TeamworkProjects{
         }
 
 
-        const url = root + '/projects/' + idToUse + '/todo_lists.json?getNewTaskDefaults=true&nestSubTasks=true';
+        const url = root + '/projects/' + idToUse + '/todo_lists.json?getNewTaskDefaults=true&nestSubTasks=false';
 
         let json = await axios({
             method:'get',

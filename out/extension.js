@@ -18,10 +18,10 @@ function activate(context) {
         vscode.window.registerTreeDataProvider('taskOutline', taskProvider);
         // Refresh Data on startup and setup status bar
         twp.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 0);
-        let projectConfig = yield twp.GetProjectForRepository();
-        twp.statusBarItem.command = "twp.SetProject";
+        twp.Config = yield twp.GetProjectForRepository();
+        twp.statusBarItem.command = "twp.SetActiveProject";
         twp.statusBarItem.show();
-        twp.statusBarItem.text = "Teamwork: " + projectConfig.ActiveProjectName;
+        twp.statusBarItem.text = twp.Config.ActiveProjectName;
         twp.statusBarItem.tooltip = "Click to refresh Project Data";
         setTimeout(() => twp.RefreshData(), 1 * 60 * 1000);
         vscode.commands.registerCommand('taskOutline.refresh', task => {
@@ -30,11 +30,6 @@ function activate(context) {
         vscode.commands.registerCommand('taskOutline.showElement', task => {
             twp.openResource(task);
         });
-        //vscode.commands.registerCommand('twp.assignTask',(task:TaskItemNode)  => {
-        //	twp.AssignTask(task);
-        //	taskProvider.refresh(task);
-        //	vscode.window.showInformationMessage("Task assigned");
-        //});
         vscode.commands.registerCommand('twp.completeTask', (task) => {
             twp.CompleteTask(task.id);
             task.isComplete = true;

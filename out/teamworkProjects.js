@@ -344,15 +344,17 @@ class TeamworkProjects {
     RefreshData() {
         return __awaiter(this, void 0, void 0, function* () {
             this.statusBarItem.text = "Teamwork: Updating Projects";
-            let project = yield this.GetProjectForRepository();
-            project.Projects.forEach((element) => __awaiter(this, void 0, void 0, function* () {
+            if (this.Config === null) {
+                this.Config = yield this.GetProjectForRepository();
+            }
+            this.Config.Projects.forEach((element) => __awaiter(this, void 0, void 0, function* () {
                 this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
                 var taskLists = yield this.getTaskLists(this._context, null, element.Id, true);
                 this.statusBarItem.text = "Teamwork: Refreshing TodoItems";
                 taskLists.forEach((subelement) => __awaiter(this, void 0, void 0, function* () {
                     var taskItems = yield this.getTaskItems(this._context, null, null, subelement.id, true);
                 }));
-                this.statusBarItem.text = "Teamwork: " + project.ActiveProjectName;
+                this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
             }));
         });
     }
@@ -487,11 +489,25 @@ class TeamworkProjects {
     SelectActiveProject() {
         return __awaiter(this, void 0, void 0, function* () {
             let savedConfig = yield this.GetProjectForRepository();
-            const projectItem = yield vscode.window.showQuickPick(this.GetProjectQuickTips(true, savedConfig.Projects), { placeHolder: "Select Active Project", ignoreFocusOut: true, canPickMany: false });
+            let nodeList = [];
+            savedConfig.Projects.forEach(element => {
+                var isPicked = false;
+                if (parseInt(savedConfig.ActiveProjectId) === element.Id) {
+                    isPicked = true;
+                }
+                var item = new ProjectQuickTip_1.ProjectQuickTip(element.Name, element.Id.toString(), isPicked);
+                nodeList.push(item);
+            });
+            const projectItem = yield vscode.window.showQuickPick(nodeList, { placeHolder: "Select Active Project", ignoreFocusOut: true, canPickMany: false });
             if (projectItem) {
+                savedConfig.ActiveProjectId = projectItem.id;
+                savedConfig.ActiveProjectName = projectItem.name;
+                this.statusBarItem.text = "Active Project: " + projectItem;
                 var path = vscode.workspace.rootPath + "/twp.json";
                 let data = JSON.stringify(savedConfig);
                 fs.writeFileSync(path, data);
+                this.RefreshData();
+                vscode.commands.executeCommand("taskOutline.refresh");
                 return savedConfig;
             }
         });
@@ -519,7 +535,7 @@ class TeamworkProjects {
                     return cachedNodes;
                 }
             }
-            const url = root + '/projects/' + idToUse + '/todo_lists.json?getNewTaskDefaults=true&nestSubTasks=true';
+            const url = root + '/projects/' + idToUse + '/todo_lists.json?getNewTaskDefaults=true&nestSubTasks=false';
             let json = yield axios({
                 method: 'get',
                 url,
