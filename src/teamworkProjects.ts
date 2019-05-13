@@ -13,6 +13,7 @@ import { Utilities } from './utilities';
 import { ProjectNode } from './model/nodes/ProjectNode';
 import { Person, PeopleResponse } from './model/responses/peopleResponse';
 import { TaskProvider } from './taskProvider';
+import { TeamworkProjectsApi } from './teamworkProjectsApi';
 
 export class TeamworkProjects{
     private readonly _extensionPath: string;    
@@ -21,11 +22,12 @@ export class TeamworkProjects{
     public readonly _context: vscode.ExtensionContext;
     public Projects: Project[];
     public Config : ProjectConfig;
-
+    public API: TeamworkProjectsApi;
 
     constructor(private context: vscode.ExtensionContext,extensionPath: string) {
         this._context = context;
         this._extensionPath = extensionPath;
+        this.API = new TeamworkProjectsApi();
     }
     private _disposables: vscode.Disposable[] = [];
 	public dispose() {
@@ -59,7 +61,7 @@ export class TeamworkProjects{
               this.panel.iconPath = {
                 light: vscode.Uri.file(path.join(this._extensionPath, 'media', 'projects-white.svg')),
                 dark: vscode.Uri.file(path.join(this._extensionPath, 'media', 'projects-white.svg'))
-              }
+              };
             this.panel.webview.html = this.GetWebViewContentLoader();
             this.panel.webview.html = await this.GetWebViewContent(taskItem.id);
 
@@ -173,29 +175,6 @@ export class TeamworkProjects{
     }
 
     public async AssignTask(node: TaskItemNode){
-
-        var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
-        
-        if(!token || !root){
-            vscode.window.showErrorMessage("Please Configure the extension first!"); 
-            return; 
-        }
-
-
-        let assignedTo : string[] = node.assignedTo.split(",");
-        let people: Person[] = await this.GetPeopleInProject(true, node.parentNode.parentNode.id.toString());
-
-        const selectedPeople = await vscode.window.showQuickPick(
-            this.GetPeopleQuickTips(people,assignedTo),
-            { placeHolder: "Select Person", ignoreFocusOut: true, canPickMany: true },
-        );
-        if (selectedPeople) {
-            
-            vscode.window.showInformationMessage("et voila");
-        }
     }
 
     public async GetWebViewContent(taskItem: number, force: boolean = false){
@@ -258,7 +237,7 @@ export class TeamworkProjects{
     }
 
     public async GetWebViewContentAdaptiveCard(taskItem: number, force: boolean = false)  {
-        var todo = await this.getTodoItem(this._context, taskItem,force);
+        var todo = await this.API.getTodoItem(this._context, taskItem,force);
         if(todo){
             const templateFile = require(path.join(this._extensionPath, 'media/cards', 'taskCard.json'));
             var  _templatePayload: object = templateFile;
@@ -330,7 +309,7 @@ export class TeamworkProjects{
 
         var auth = "Basic " + Buffer.from(config.get("APIKey") + ":xxxxxx").toString("base64");
 
-        var todo = await this.getTodoItem(this._context, taskItem);
+        var todo = await this.API.getTodoItem(this._context, taskItem);
 
         if(todo){
             const nonce = this.getNonce();
@@ -399,25 +378,61 @@ export class TeamworkProjects{
         return text;
     }
 
-    public async RefreshData(){
 
+    public async QuickAddTask(){
+        
+
+            var editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showInformationMessage("You need to have code selected to use this.");
+            }
+
+
+            var workspaceRoot = vscode.workspace.rootPath;
+            var fileName = editor.document.fileName.replace(workspaceRoot,"");
+            var selection = editor.selection;
+            var line = selection.start.line;
+            var text = editor.document.getText(selection);
+
+
+            var list =  this.GetTaskListQuickTip(true);
+            if(list !== null){
+                const taskList = await vscode.window.showQuickPick(
+                    list,
+                    { placeHolder: "Select Tasklist", ignoreFocusOut: true, canPickMany: false },
+                );
+
+                if(taskList !== null){
+                    const result = await vscode.window.showInputBox({
+                        placeHolder: 'Task Title @person [today|tomorrow]',
+                    });
+        
+        
+                    vscode.window.showInformationMessage(taskList.name + "_" + result);
+                }
+        }
+
+
+    }
+
+    public async RefreshData(){
 
         this.statusBarItem.text = "Teamwork: Updating Projects";
         if(this.Config === null) {
             this.Config = await this.GetProjectForRepository();
         }  
 
-        this.Config.Projects.forEach(async element => {
+        this.Config.Projects.forEach(async element =>{
+
             this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
-            var taskLists = await this.getTaskLists(this._context,null,element.Id,true)
+            element.Project.TodoLists = await this.API.getTaskLists(this._context,element.Id,true);
             
             this.statusBarItem.text = "Teamwork: Refreshing TodoItems";
-            taskLists.forEach(async subelement =>{
-                var taskItems = await this.getTaskItems(this._context,null,null,subelement.id,true);
+            element.Project.TodoLists.forEach(async subelement =>{
+                subelement.TodoItems = await this.API.getTaskItems(this._context,parseInt(subelement.id),true);
             });
             this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
         });
-
 
     }
 
@@ -425,60 +440,12 @@ export class TeamworkProjects{
         return JSON.parse(json);
     }
 
-    public async GetProjects(force: boolean = false, includePeople: boolean= false, getAll: boolean = false, getList: string = "") : Promise<Project[]>{
-        var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
-        
-        if(!token || !root){
-            vscode.window.showErrorMessage("Please Configure the extension first!"); 
-            return; 
-        }  
-
-        let result;
-        // Load from cache if duration less than 30 minutes
-        let cachedProjects : Project[] = this._context.globalState.get("twp.data.projects",null);
-        let lastUpdated : Date = this._context.globalState.get("twp.data.projects.lastUpdated", new Date() );
-        if(cachedProjects && cachedProjects.length > 0 && lastUpdated && !force){
-            if(Utilities.DateCompare(lastUpdated,30)){
-                result =  cachedProjects;
-            }
-        }
-
-        if(!result){
-            const url = root + '/tasks/projects.json?type=canAddItem&pageSize=200';
-            result = await axios({
-                method:'get',
-                url,
-                auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-        }
-
-        if(includePeople){
-            result.data.projects.forEach(async element =>{
-                element.people = await this.GetPeopleInProject(force,element.id);
-            });
-        }
-
-        this.Projects = result.data.projects;
-        this._context.globalState.update("twp.data.projects",result.data.projects);
-        this._context.globalState.update("twp.data.projects.lastUpdated", new Date() );
-        return result.projects;
-    }
-
     public async GetProjectQuickTips(force: boolean = false, selected: ProjectConfigEntry[], includePeople: boolean = false): Promise<ProjectQuickTip[]> {
 
         
         let nodeList: ProjectQuickTip[] = []; 
 
-        let projects = await this.GetProjects(force,includePeople);
+        let projects = await this.API.GetProjects(this._context,force,includePeople);
 
         this.Projects.forEach(element => {
             var isPicked = false;
@@ -490,45 +457,42 @@ export class TeamworkProjects{
         });
 
         this._context.globalState.update("twp.data.projects",projects );       
-        this._context.globalState.update("twp.data.projects.lastUpdated",Date.now())
+        this._context.globalState.update("twp.data.projects.lastUpdated",Date.now());
         return nodeList;
     }
 
-    public async GetPeopleInProject(force: boolean = false,id: string) : Promise<Person[]>{
+    public async GetTaskListQuickTip(force: boolean = false, includePeople: boolean = false): Promise<ProjectQuickTip[]> {
 
-        var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
         
-        if(!token || !root){
-            vscode.window.showErrorMessage("Please Configure the extension first!"); 
-            return; 
-        }
- 
-        var url = root + '/projects/' + id + "/people.json";
-        let json = await axios({
-            method:'get',
-            url,
-            auth: {
-                username: token,
-                password: 'xxxxxxxxxxxxx'
+        let nodeList: ProjectQuickTip[] = []; 
+
+        this.Config.Projects.forEach(element => {
+            if(element.Id.toString() === this.Config.ActiveProjectId){
+
+                if(element.Project.TodoLists && element.Project.TodoLists.length > 0){
+                    element.Project.TodoLists.forEach(subelement => {
+                        var item = new ProjectQuickTip(subelement.name, subelement.id,false);
+                        nodeList.push(item);
+                    });
+                }else{
+                    vscode.window.showInformationMessage("Please wait for Project data to be loaded");
+                    this.RefreshData();
+                    return null;
+                }
             }
-        })
-        .catch(function (error) {
-            console.log(error);
         });
 
-        return json.people; 
+        return nodeList;
     }
+
 
     public async GetProjectForRepository(): Promise<ProjectConfig>{
         try{
             var path = vscode.workspace.rootPath + "/twp.json";
+            let config : ProjectConfig;
 
             if (fs.existsSync(path)) {
-                let config = JSON.parse(fs.readFileSync(path, 'utf8'));
-    
+                config = JSON.parse(fs.readFileSync(path, 'utf8'));
                 if(config){
                     return config;
                 }
@@ -543,7 +507,6 @@ export class TeamworkProjects{
         }
     }
 
-
     public async SelectProject() : Promise<ProjectConfig>{
         let savedConfig: ProjectConfig = await this.GetProjectForRepository();
 
@@ -556,7 +519,7 @@ export class TeamworkProjects{
             var items : ProjectConfigEntry[] = [];
             projectItem.forEach(async element =>{
                 items.push(new ProjectConfigEntry(element.label,element.id,element));
-            })
+            });
             var config = new ProjectConfig(items);
             var path = vscode.workspace.rootPath + "/twp.json";
             let data = JSON.stringify(config);  
@@ -603,55 +566,17 @@ export class TeamworkProjects{
     }
 
  
-    public async getTaskLists(context: vscode.ExtensionContext, node: ProjectNode,id: number = 0, force: boolean = false) : Promise<INode[]>{
+    public async getTaskLists(context: vscode.ExtensionContext,parentNode: ProjectNode, id: number = 0, force: boolean = false) : Promise<INode[]>{
         var statusBarText = this.statusBarItem.text;
         this.statusBarItem.text = "Loading Tasklists......";
-        var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
-        
-        if(!token || !root){
-            vscode.window.showErrorMessage("Please Configure the extension first!"); 
-            return; 
-        }
 
-        var idToUse: number = id !== 0 ? id : node.id;
-
-        // Lets check our cache first
-        let nodeList: INode[] = [];
-
-        // Load from cache if duration less than 30 minutes
-        let cachedNodes : INode[] = context.globalState.get("twp.data." + idToUse + ".tasklists",[]);
-        let lastUpdated : Date = context.globalState.get("twp.data.tasklists." + idToUse + ".lastUpdated",new Date() );
-        if(cachedNodes.length > 0 && lastUpdated && !force){
-            if(Utilities.DateCompare(lastUpdated,30)){
-                return cachedNodes;
-            }
-        }
-
-
-        const url = root + '/projects/' + idToUse + '/todo_lists.json?getNewTaskDefaults=true&nestSubTasks=false';
-
-        let json = await axios({
-            method:'get',
-            url,
-            auth: {
-                username: token,
-                password: 'xxxxxxxxxxxxx'
-            }
-        })
-        .catch(function (error) {
-            console.log(error);
+        // Load task lists
+        var taskLists = await this.API.getTaskLists(context,parentNode.id,force);
+        let nodeList: TaskListNode[] = [];
+        taskLists.forEach(element => {
+            nodeList.push(new TaskListNode(element.name, parseInt(element.id),parentNode, null, this));
         });
 
-        json.data["todo-lists"].forEach(element => {
-            var provider = node !== null ? null : node.provider;
-            nodeList.push(new TaskListNode(element.name, element.id,node,provider,this));
-        });
-
-        context.globalState.update("twp.data." + idToUse + ".tasklists",nodeList);
-        context.globalState.update("twp.data.tasklists." + idToUse + ".lastUpdated",Date.now())
         this.statusBarItem.text = statusBarText;
         return nodeList; 
     }
@@ -661,50 +586,17 @@ export class TeamworkProjects{
        
         var statusBarText = this.statusBarItem.text;
         this.statusBarItem.text = "Loading tasks......";
-       
-        var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
-        
-        if(!token || !root){
-            vscode.window.showErrorMessage("Please Configure the extension first!"); 
-            return; 
-        }
 
-        var idToUse: number = id !== 0 ? id : node.id;
-
+        let todoItems = await this.API.getTaskItems(context, id, force);
         let nodeList: INode[] = []; 
-        // Load from cache if duration less than 30 minutes
-        let cachedNodes : INode[] = context.globalState.get("twp.data." + idToUse + ".todoitems",[]);
-        let lastUpdated : Date = context.globalState.get("twp.data.tasklists." + idToUse + ".todoitems", new Date())
-        if(cachedNodes.length > 0 && lastUpdated && !force){
-            if(Utilities.DateCompare(lastUpdated,30)){
-                return cachedNodes;
-            }
-        }
 
-        const url = root + '/tasklists/' + idToUse + '/tasks.json';
-
-        let json = await axios({
-            method:'get',
-            url,
-            auth: {
-                username: token,
-                password: 'xxxxxxxxxxxxx'
-            }
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-
-        json.data["todo-items"].forEach(element => {
+        todoItems.forEach(element => {
             nodeList.push(new TaskItemNode(element.content,
                 element["responsible-party-summary"],"", 
                 element.id,
                 element.priority,
                 element.hasTickets,
-                element.isComplete,
+                element.completed,
                 element["responsible-party-ids"],
                 node,
                 "taskItem",
@@ -712,109 +604,10 @@ export class TeamworkProjects{
                 this));
         });
 
-        
-        context.globalState.update("twp.data." + idToUse + ".todoitems", nodeList);
-        context.globalState.update("twp.data.tasklists." + idToUse + ".todoitems", Date.now());
         this.statusBarItem.text = statusBarText;
         return nodeList; 
     }
 
 
-    public async getTodoItem(context: vscode.ExtensionContext, id: number, force: boolean = false){
-        
-        var statusBarText = this.statusBarItem.text;
-        this.statusBarItem.text = "Fetching task details";
-        
-        var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
-
-
-        var item = this._context.globalState.get("twp.data.task." + id,"");
-        var lastUpdated = this._context.globalState.get("twp.data.task." + id + ".lastUpdated", new Date());
-        var todo;
-        if(item && !force){
-            if(Utilities.DateCompare(lastUpdated,30)){
-                todo = item;
-            }
-        }else{
-            const url = root + '/tasks/' + id + '.json';
-
-
-            let json = await axios({
-                method:'get',
-                url,
-                auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-
-            todo = json.data["todo-item"];
-            this._context.globalState.update("twp.data.task." + id + ".lastUpdated", Date.now());
-            this._context.globalState.update("twp.data.task." + id, todo);
-        }
-
-        var dateFormat = require('dateformat');
-        todo['created-on'] = dateFormat(Date.parse(todo['created-on']), "ddd-mm-yyyy");
-        todo['description'] = todo['description'].replace('\'','´');
-        todo['content'] = todo['content'].replace('\'','´');
-
-        // If task has comments -> Load them
-        if(todo["comments-count"] > 0){
-            const commenturl = root + '/tasks/' + id + '/comments.json';
-            let comments = await axios({
-                method:'get',
-                url: commenturl,
-                auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-    
-            var TurndownService = require('turndown')
-            var turndownService = new TurndownService()
-
-            comments.data.comments.forEach(element => {
-                var newBody = turndownService.turndown(element['html-body']);
-                newBody = newBody.replace('\'','´');
-                element.body = newBody;
-                element["datetime"] = dateFormat(Date.parse(todo.datetime), "ddd-mm-yyyy hh:MM");
-            });
-
-            todo["comments"] = comments.data.comments;
-        }
-     
-        if(todo["attachments-count"] > 0){
-            const attachment = root + '/v/2/tasks/' + id + '/files.json?getCategoryPath=true&getLikes=true&getVersions=true&page=1&pageSize=50';
-            let comments = await axios({
-                method:'get',
-                url: attachment,
-                auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-    
-            todo["attachments"] = comments.data.files;
-        }
-
-        todo["rooturl"] = root;
-        todo.rooturl = root;
-        this._context.globalState.update("twp.data.task." + id + ".lastUpdated", Date.now());
-        this._context.globalState.update("twp.data.task." + id, todo);
-        this.statusBarItem.text = statusBarText;
-        return todo;
-    }
 
 }

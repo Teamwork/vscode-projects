@@ -140,7 +140,7 @@
 			"editor/context": [
 				{
 					"command": "twp.linkTask",
-					"group": "YourGroup@1"
+					"group": "twpGroup"
 			  }
 			],
 			"view/item/context": [

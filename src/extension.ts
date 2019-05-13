@@ -42,25 +42,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('twp.SetActiveProject',  task => {twp.SelectActiveProject();});
 	vscode.commands.registerCommand('twp.SetProject',  task => {twp.SelectProject();});
 	vscode.commands.registerCommand('twp.RefreshData', task => {twp.RefreshData();});
-
-
-	vscode.commands.registerCommand('twp.linkTask', task => {
-
-
-		var editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			vscode.window.showInformationMessage("You need to have code selected to use this.");
-		}
-
-
-		var workspaceRoot = vscode.workspace.rootPath;
-		var fileName = editor.document.fileName.replace(workspaceRoot,"");
-		var selection = editor.selection;
-		var line = selection.start.line;
-		var text = editor.document.getText(selection);
-
-
-	});
+	vscode.commands.registerCommand('twp.linkTask', task => { twp.QuickAddTask();});
 
 
 	// Refresh data once every 30 minutes
