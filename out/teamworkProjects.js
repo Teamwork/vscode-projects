@@ -21,6 +21,7 @@ const teamworkProjectsApi_1 = require("./teamworkProjectsApi");
 class TeamworkProjects {
     constructor(context, extensionPath) {
         this.context = context;
+        this.IsLoading = false;
         this._disposables = [];
         this._context = context;
         this._extensionPath = extensionPath;
@@ -330,6 +331,9 @@ class TeamworkProjects {
     }
     QuickAddTask() {
         return __awaiter(this, void 0, void 0, function* () {
+            if (this.IsLoading) {
+                return;
+            }
             var editor = vscode.window.activeTextEditor;
             if (!editor) {
                 vscode.window.showInformationMessage("You need to have code selected to use this.");
@@ -339,8 +343,8 @@ class TeamworkProjects {
             var selection = editor.selection;
             var line = selection.start.line;
             var text = editor.document.getText(selection);
-            var list = this.GetTaskListQuickTip(true);
-            if (list !== null) {
+            var list = yield this.GetTaskListQuickTip(true);
+            if (list !== null && list.length > 0) {
                 const taskList = yield vscode.window.showQuickPick(list, { placeHolder: "Select Tasklist", ignoreFocusOut: true, canPickMany: false });
                 if (taskList !== null) {
                     const result = yield vscode.window.showInputBox({
@@ -353,6 +357,10 @@ class TeamworkProjects {
     }
     RefreshData() {
         return __awaiter(this, void 0, void 0, function* () {
+            if (this.IsLoading) {
+                return;
+            }
+            this.IsLoading = true;
             this.statusBarItem.text = "Teamwork: Updating Projects";
             if (this.Config === null) {
                 this.Config = yield this.GetProjectForRepository();
@@ -366,6 +374,7 @@ class TeamworkProjects {
                 }));
                 this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
             }));
+            this.IsLoading = false;
         });
     }
     toProjectListResponse(json) {

@@ -23,6 +23,7 @@ export class TeamworkProjects{
     public Projects: Project[];
     public Config : ProjectConfig;
     public API: TeamworkProjectsApi;
+    public IsLoading: Boolean = false;
 
     constructor(private context: vscode.ExtensionContext,extensionPath: string) {
         this._context = context;
@@ -381,41 +382,48 @@ export class TeamworkProjects{
 
     public async QuickAddTask(){
         
+        if(this.IsLoading){
+            return;
+        }
 
-            var editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showInformationMessage("You need to have code selected to use this.");
-            }
-
-
-            var workspaceRoot = vscode.workspace.rootPath;
-            var fileName = editor.document.fileName.replace(workspaceRoot,"");
-            var selection = editor.selection;
-            var line = selection.start.line;
-            var text = editor.document.getText(selection);
-
-
-            var list =  this.GetTaskListQuickTip(true);
-            if(list !== null){
-                const taskList = await vscode.window.showQuickPick(
-                    list,
-                    { placeHolder: "Select Tasklist", ignoreFocusOut: true, canPickMany: false },
-                );
-
-                if(taskList !== null){
-                    const result = await vscode.window.showInputBox({
-                        placeHolder: 'Task Title @person [today|tomorrow]',
-                    });
-        
-        
-                    vscode.window.showInformationMessage(taskList.name + "_" + result);
-                }
+        var editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showInformationMessage("You need to have code selected to use this.");
         }
 
 
+        var workspaceRoot = vscode.workspace.rootPath;
+        var fileName = editor.document.fileName.replace(workspaceRoot,"");
+        var selection = editor.selection;
+        var line = selection.start.line;
+        var text = editor.document.getText(selection);
+
+
+        var list = await this.GetTaskListQuickTip(true);
+        if(list !== null && list.length > 0){
+            const taskList = await vscode.window.showQuickPick(
+                list,
+                { placeHolder: "Select Tasklist", ignoreFocusOut: true, canPickMany: false },
+            );
+
+            if(taskList !== null){
+                const result = await vscode.window.showInputBox({
+                    placeHolder: 'Task Title @person [today|tomorrow]',
+                });
+    
+    
+                vscode.window.showInformationMessage(taskList.name + "_" + result);
+            }
+        }
     }
 
     public async RefreshData(){
+
+        if(this.IsLoading){
+            return;
+        }
+
+        this.IsLoading = true;
 
         this.statusBarItem.text = "Teamwork: Updating Projects";
         if(this.Config === null) {
@@ -433,7 +441,8 @@ export class TeamworkProjects{
             });
             this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
         });
-
+        
+        this.IsLoading = false;
     }
 
     public toProjectListResponse(json: string): ProjectListResponse {
