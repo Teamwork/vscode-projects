@@ -57,8 +57,8 @@ export class TeamworkProjects{
                 ]                
               });
               this.panel.iconPath = {
-                light: vscode.Uri.file(path.join(this._extensionPath, 'media', 'projects-white.svg')),
-                dark: vscode.Uri.file(path.join(this._extensionPath, 'media', 'projects-white.svg'))
+                light: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg')),
+                dark: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg'))
               }
             this.panel.webview.html = this.GetWebViewContentLoader();
             this.panel.webview.html = await this.GetWebViewContent(taskItem.id);
@@ -543,7 +543,6 @@ export class TeamworkProjects{
         }
     }
 
-
     public async SelectProject() : Promise<ProjectConfig>{
         let savedConfig: ProjectConfig = await this.GetProjectForRepository();
 
@@ -602,8 +601,7 @@ export class TeamworkProjects{
         }
     }
 
- 
-    public async getTaskLists(context: vscode.ExtensionContext, node: ProjectNode,id: number = 0, force: boolean = false) : Promise<INode[]>{
+    public async  getTaskLists(context: vscode.ExtensionContext, node: ProjectNode,id: number = 0, force: boolean = false) : Promise<INode[]>{
         var statusBarText = this.statusBarItem.text;
         this.statusBarItem.text = "Loading Tasklists......";
         var axios = require("axios");
@@ -646,7 +644,8 @@ export class TeamworkProjects{
         });
 
         json.data["todo-lists"].forEach(element => {
-            nodeList.push(new TaskListNode(element.name, element.id,node,node.provider,this));
+            var provider =  node !== null ? node.provider : null;
+            nodeList.push(new TaskListNode(element.name, element.id,node,provider,this));
         });
 
         context.globalState.update("twp.data." + idToUse + ".tasklists",nodeList);
@@ -655,7 +654,6 @@ export class TeamworkProjects{
         return nodeList; 
     }
    
-
     public async getTaskItems(context: vscode.ExtensionContext, node: TaskListNode,provider: TaskProvider, id: number = 0, force: boolean = false) : Promise<INode[]>{
        
         var statusBarText = this.statusBarItem.text;
@@ -714,10 +712,9 @@ export class TeamworkProjects{
         
         context.globalState.update("twp.data." + idToUse + ".todoitems", nodeList);
         context.globalState.update("twp.data.tasklists." + idToUse + ".todoitems", Date.now());
-        this.statusBarItem.text = statusBarText;
+        this.statusBarItem.text = this.Config.ActiveProjectName;
         return nodeList; 
     }
-
 
     public async getTodoItem(context: vscode.ExtensionContext, id: number, force: boolean = false){
         

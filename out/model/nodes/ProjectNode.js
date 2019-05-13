@@ -27,7 +27,7 @@ class ProjectNode {
     }
     GetIcon() {
         if (this.Project == this.twp.SelectActiveProject)
-            return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', `projects-white.svg`));
+            return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'resources', `projects-white.svg`));
     }
     getChildren(context) {
         return __awaiter(this, void 0, void 0, function* () {

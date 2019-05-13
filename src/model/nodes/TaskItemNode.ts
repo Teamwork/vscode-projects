@@ -43,13 +43,13 @@ export class TaskItemNode implements INode {
     public getIcon(priority: string, hasDesk: boolean = false, isComplete: boolean = false) {
 
           if(isComplete){
-            return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', 'task.svg')); 
+            return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'resources', 'task.svg')); 
         }
 
         if(hasDesk){
             return {
-                light: path.join(this.twp._context.extensionPath, 'media/light', 'twdesk_light.svg'),
-                dark: path.join(this.twp._context.extensionPath, 'media/dark', 'twdesk_dark.svg'),
+                light: path.join(this.twp._context.extensionPath, 'resources/light', 'twdesk_light.svg'),
+                dark: path.join(this.twp._context.extensionPath, 'resources/dark', 'twdesk_dark.svg'),
             };
         }
 
@@ -58,8 +58,8 @@ export class TaskItemNode implements INode {
         }
 
         return {
-            light: path.join(this.twp._context.extensionPath, 'media/light', `task_priority_${priority}.svg`),
-            dark: path.join(this.twp._context.extensionPath, 'media/dark', `task_priority_${priority}.svg`),
+            light: path.join(this.twp._context.extensionPath, 'resources/light', `task_priority_${priority}.svg`),
+            dark: path.join(this.twp._context.extensionPath, 'resources/dark', `task_priority_${priority}.svg`),
         };
 
 

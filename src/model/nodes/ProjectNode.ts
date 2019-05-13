@@ -25,7 +25,7 @@ export class ProjectNode implements INode {
 
     public GetIcon() {
         if(this.Project == this.twp.SelectActiveProject)
-        return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', `projects-white.svg` ));
+        return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'resources', `projects-white.svg` ));
     }
 
     public async getChildren(context: vscode.ExtensionContext): Promise<INode[]> {

@@ -53,8 +53,8 @@ class TeamworkProjects {
                     ]
                 });
                 this.panel.iconPath = {
-                    light: vscode.Uri.file(path.join(this._extensionPath, 'media', 'projects-white.svg')),
-                    dark: vscode.Uri.file(path.join(this._extensionPath, 'media', 'projects-white.svg'))
+                    light: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg')),
+                    dark: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg'))
                 };
                 this.panel.webview.html = this.GetWebViewContentLoader();
                 this.panel.webview.html = yield this.GetWebViewContent(taskItem.id);
@@ -548,7 +548,8 @@ class TeamworkProjects {
                 console.log(error);
             });
             json.data["todo-lists"].forEach(element => {
-                nodeList.push(new TaskListNode_1.TaskListNode(element.name, element.id, node, node.provider, this));
+                var provider = node !== null ? node.provider : null;
+                nodeList.push(new TaskListNode_1.TaskListNode(element.name, element.id, node, provider, this));
             });
             context.globalState.update("twp.data." + idToUse + ".tasklists", nodeList);
             context.globalState.update("twp.data.tasklists." + idToUse + ".lastUpdated", Date.now());
@@ -595,7 +596,7 @@ class TeamworkProjects {
             });
             context.globalState.update("twp.data." + idToUse + ".todoitems", nodeList);
             context.globalState.update("twp.data.tasklists." + idToUse + ".todoitems", Date.now());
-            this.statusBarItem.text = statusBarText;
+            this.statusBarItem.text = this.Config.ActiveProjectName;
             return nodeList;
         });
     }

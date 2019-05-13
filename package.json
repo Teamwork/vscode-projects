@@ -65,7 +65,7 @@
 				{
 					"id": "twp_Outline",
 					"title": "Teamwork Projects",
-					"icon": "media/projects-white.svg"
+					"icon": "resources/projects-white.svg"
 				}
 			]
 		},
@@ -104,11 +104,18 @@
 			},
 			{
 				"command": "twp.SetProject",
-				"title": "Teamwork: Select Project for Repository"
+				"title": "Select Project for Repository",
+				"icon": {
+					"light": "resources/projects-white.svg",
+					"dark": "resources/projects-white.svg"
+				}
+			},{
+				"command": "twp.SetActiveProject",
+				"title": "Select the Active Project for Repository"
 			},
 			{
 				"command": "twp.RefreshData",
-				"title": "Teamwork: Refresh all Project Data"
+				"title": "Refresh all Project Data"
 			},
 			{
 				"command": "twp.editTaskFilter",
@@ -153,6 +160,11 @@
 			"view/title": [
 				{
 					"command": "taskOutline.refresh",
+					"when": "view == taskOutline",
+					"group": "navigation"
+				},
+				{
+					"command": "twp.SetProject",
 					"when": "view == taskOutline",
 					"group": "navigation"
 				}

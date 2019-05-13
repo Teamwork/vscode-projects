@@ -3,6 +3,8 @@ import { Project } from "./responses/projectListResponse";
 export class ProjectConfig{
     public ActiveProjectName : string;
     public ActiveProjectId: string;
+    public ActiveTaskListId: string;
+    public ActiveTaskListName: string;
     public Projects: ProjectConfigEntry[];
     constructor(projects) {
         this.Projects = projects;
