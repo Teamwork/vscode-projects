@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const utilities_1 = require("./utilities");
+const taskQuickAdd_1 = require("./model/taskQuickAdd");
 class TeamworkProjectsApi {
     GetProjects(context, force = false, includePeople = false, getAll = false, getList = "") {
         return __awaiter(this, void 0, void 0, function* () {
@@ -233,6 +234,40 @@ class TeamworkProjectsApi {
             context.globalState.update("twp.data.task." + id + ".lastUpdated", Date.now());
             context.globalState.update("twp.data.task." + id, todo);
             return todo;
+        });
+    }
+    postTodoItem(context, id, tasklistid, title, description) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var axios = require("axios");
+            var config = vscode.workspace.getConfiguration('twp');
+            var token = config.get("APIKey");
+            var root = config.get("APIRoot");
+            const url = root + '/projects/' + id + "/tasks/quickadd.json";
+            var task = new taskQuickAdd_1.TaskQuickAdd();
+            task.tasklistId = tasklistid;
+            task.notify = false;
+            task["creator-id"] = 259828;
+            task.private = false;
+            task.content = title;
+            var todoDetails = new taskQuickAdd_1.TodoItemQuick();
+            todoDetails.description = description;
+            task["todo-item"] = todoDetails;
+            let json = yield axios({
+                method: 'post',
+                data: task,
+                url: url,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                auth: {
+                    username: token,
+                    password: 'xxxxxxxxxxxxx'
+                }
+            })
+                .catch(function (error) {
+                console.log(error);
+            });
+            return json;
         });
     }
 }

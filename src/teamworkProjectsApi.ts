@@ -5,6 +5,7 @@ import { TaskListResponse, TodoList } from './model/responses/TaskListResponse';
 import { TodoItem, TaskItemResponse} from './model/responses/TaskItemResponse';
 import { Project, ProjectListResponse} from './model/responses/projectListResponse';
 import { Person, PeopleResponse} from './model/responses/peopleResponse';
+import { TaskQuickAdd, TodoItemQuick } from './model/taskQuickAdd';
 
 export class TeamworkProjectsApi{
 
@@ -262,6 +263,47 @@ export class TeamworkProjectsApi{
         context.globalState.update("twp.data.task." + id, todo);
         return todo;
     }
+
+
+    public async postTodoItem(context: vscode.ExtensionContext, id: number, tasklistid: number, title:string, description:string){
+        var axios = require("axios");
+        var config = vscode.workspace.getConfiguration('twp');
+        var token = config.get("APIKey");
+        var root = config.get("APIRoot");
+
+        const url = root + '/projects/' + id + "/tasks/quickadd.json";
+
+        var task = new TaskQuickAdd();
+        task.tasklistId = tasklistid;
+        task.notify = false;
+        task["creator-id"] = 259828;
+        task.private = false;
+        task.content = title;
+
+        var todoDetails = new TodoItemQuick();
+        todoDetails.description = description;
+        task["todo-item"] = todoDetails;
+
+        let json = await axios({
+            method: 'post',
+            data: task,
+            url:url,
+            headers: {
+               "Content-Type": "application/json",
+            },
+            auth: {
+                    username: token,
+                    password: 'xxxxxxxxxxxxx'
+            }
+          })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+        return json;
+    }
+
+
 
 }
 

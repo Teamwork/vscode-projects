@@ -350,7 +350,20 @@ class TeamworkProjects {
                     const result = yield vscode.window.showInputBox({
                         placeHolder: 'Task Title @person [today|tomorrow]',
                     });
-                    vscode.window.showInformationMessage(taskList.name + "_" + result);
+                    var taskDescription = "Task added from VSCode: \n";
+                    taskDescription += "File: " + fileName + "\n";
+                    taskDescription += "Line: " + line + "\n";
+                    taskDescription += "Error Notes: " + "\n";
+                    taskDescription += text;
+                    var newTask = yield this.API.postTodoItem(this._context, parseInt(this.Config.ActiveProjectId), parseInt(taskList.id), result, taskDescription);
+                    var config = vscode.workspace.getConfiguration('twp');
+                    var root = config.get("APIRoot");
+                    var id = newTask["data"]["taskIds"];
+                    var taskText = "#Task: " + root + "/tasks/" + id + "\n";
+                    editor.edit(edit => {
+                        edit.insert(new vscode.Position(line - 1, 0), taskText);
+                    });
+                    vscode.window.showInformationMessage("Task was added");
                 }
             }
         });
