@@ -20,10 +20,14 @@ class ProjectNode {
     }
     getTreeItem() {
         return {
-            iconPath: vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', `projects-white.svg`)),
+            iconPath: this.GetIcon(),
             label: this.label,
             collapsibleState: vscode.TreeItemCollapsibleState.Collapsed
         };
+    }
+    GetIcon() {
+        if (this.Project == this.twp.SelectActiveProject)
+            return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', `projects-white.svg`));
     }
     getChildren(context) {
         return __awaiter(this, void 0, void 0, function* () {

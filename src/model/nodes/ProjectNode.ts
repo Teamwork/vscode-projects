@@ -9,17 +9,24 @@ import { TaskProvider } from "../../taskProvider";
 
 export class ProjectNode implements INode {
 
+    public IsActiveProject : boolean;
+
     constructor(private readonly label: string, readonly id: number,public Project: Project, public readonly provider: TaskProvider, private readonly twp: TeamworkProjects) {
     }
 
     public getTreeItem(): vscode.TreeItem {
         return {
-            iconPath: vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', `projects-white.svg` )),
+            iconPath: this.GetIcon(),
             label: this.label,
             collapsibleState: vscode.TreeItemCollapsibleState.Collapsed
         };
     }
 
+
+    public GetIcon() {
+        if(this.Project == this.twp.SelectActiveProject)
+        return vscode.Uri.file(path.join(this.twp._context.extensionPath, 'media', `projects-white.svg` ));
+    }
 
     public async getChildren(context: vscode.ExtensionContext): Promise<INode[]> {
 
