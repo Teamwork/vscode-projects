@@ -14,6 +14,7 @@ import { ProjectNode } from './model/nodes/ProjectNode';
 import { Person, PeopleResponse } from './model/responses/peopleResponse';
 import { TaskProvider } from './taskProvider';
 import { TeamworkProjectsApi } from './teamworkProjectsApi';
+import { EmptyNode } from './model/nodes/EmptyNode';
 
 export class TeamworkProjects{
     private readonly _extensionPath: string;    
@@ -396,6 +397,7 @@ export class TeamworkProjects{
         var fileName = editor.document.fileName.replace(workspaceRoot,"");
         var selection = editor.selection;
         var line = selection.start.line;
+        var cursor = selection.start.character;
         var text = editor.document.getText(selection);
 
 
@@ -412,10 +414,24 @@ export class TeamworkProjects{
                 });
     
     
+                const gitExtension = vscode.extensions.getExtension('vscode.git').exports;
+                var gitLink = "";
+                var gitBranch = "";
+                if(gitExtension){
+                    const api = gitExtension.getAPI(1);
+                    if(api && api.repositories.length > 0){
+                        var repo = api.repositories[0];
+                        var remote = repo.state.remotes[0];
+                        gitBranch = repo.state.HEAD.name;
+                        gitLink = remote.fetchUrl.replace(".git","") + "/blob/" + gitBranch + fileName + "#L" + line;
+                    }
+                 }
                 var taskDescription = "Task added from VSCode: \n";
                 taskDescription += "File: " + fileName + "\n";
                 taskDescription += "Line: " + line + "\n";
-                taskDescription += "Error Notes: " + "\n";
+                if(gitBranch.length > 0) {taskDescription += "Branch:" + gitBranch + "\n";}
+                if(gitLink.length > 0) {taskDescription += "Link:" + gitLink + "\n";}
+                taskDescription += "Selection: " + "\n";
                 taskDescription += text;
 
                 var newTask = await this.API.postTodoItem(this._context,parseInt(this.Config.ActiveProjectId),parseInt(taskList.id),result,taskDescription);
@@ -423,10 +439,19 @@ export class TeamworkProjects{
                 var config = vscode.workspace.getConfiguration('twp');
                 var root = config.get("APIRoot");
                 var id = newTask["data"]["taskIds"];
-                var taskText = "#Task: " + root + "/tasks/" + id + "\n";
+                var taskDetails = await this.API.getTodoItem(this._context,parseInt(id),true);
+
+                var langConfig = Utilities.GetActiveLanguageConfig();
+                var commentWrapper = langConfig.comments.lineComment;
+                var content = taskDetails.content;
+                var responsible = taskDetails["responsible-party-names"];
+
 
                  editor.edit(edit => {
-                    edit.insert(new vscode.Position(line -1, 0), taskText);
+                    edit.setEndOfLine(vscode.EndOfLine.CRLF);
+                    edit.insert(new vscode.Position(line, cursor), commentWrapper + "Task: " + content + "\r\n");
+                    edit.insert(new vscode.Position(line, cursor), commentWrapper + "Link: " + root + "/tasks/" + id + "\r\n");
+                    edit.insert(new vscode.Position(line, cursor), commentWrapper + "Assigned To: " + responsible + "\r\n"+ "\r\n");
                 });
                 
                 vscode.window.showInformationMessage("Task was added");
@@ -447,17 +472,19 @@ export class TeamworkProjects{
             this.Config = await this.GetProjectForRepository();
         }  
 
-        this.Config.Projects.forEach(async element =>{
+        if(this.Config.Projects !== null){
+            this.Config.Projects.forEach(async element =>{
 
-            this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
-            element.Project.TodoLists = await this.API.getTaskLists(this._context,element.Id,true);
-            
-            this.statusBarItem.text = "Teamwork: Refreshing TodoItems";
-            element.Project.TodoLists.forEach(async subelement =>{
-                subelement.TodoItems = await this.API.getTaskItems(this._context,parseInt(subelement.id),true);
+                this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
+                element.Project.TodoLists = await this.API.getTaskLists(this._context,element.Id,true);
+                
+                this.statusBarItem.text = "Teamwork: Refreshing TodoItems";
+                element.Project.TodoLists.forEach(async subelement =>{
+                    subelement.TodoItems = await this.API.getTaskItems(this._context,parseInt(subelement.id),true);
+                });
+                this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
             });
-            this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
-        });
+        }
         
         this.IsLoading = false;
     }
@@ -471,7 +498,7 @@ export class TeamworkProjects{
         
         let nodeList: ProjectQuickTip[] = []; 
 
-        let projects = await this.API.GetProjects(this._context,force,includePeople);
+        this.Projects = await this.API.GetProjects(this._context,force,includePeople);
 
         this.Projects.forEach(element => {
             var isPicked = false;
@@ -482,7 +509,7 @@ export class TeamworkProjects{
             nodeList.push(item);
         });
 
-        this._context.globalState.update("twp.data.projects",projects );       
+        this._context.globalState.update("twp.data.projects",this.Projects );       
         this._context.globalState.update("twp.data.projects.lastUpdated",Date.now());
         return nodeList;
     }
@@ -492,19 +519,32 @@ export class TeamworkProjects{
         
         let nodeList: ProjectQuickTip[] = []; 
 
+        if(this.Config === null) {
+            this.Config = await this.GetProjectForRepository();
+        }  
+
+
         this.Config.Projects.forEach(element => {
             if(element.Id.toString() === this.Config.ActiveProjectId){
 
-                if(element.Project.TodoLists && element.Project.TodoLists.length > 0){
-                    element.Project.TodoLists.forEach(subelement => {
-                        var item = new ProjectQuickTip(subelement.name, subelement.id,false);
-                        nodeList.push(item);
-                    });
-                }else{
-                    vscode.window.showInformationMessage("Please wait for Project data to be loaded");
-                    this.RefreshData();
+                if(element.Project === undefined || element.Project === null){
+                    vscode.window.showInformationMessage("Please pick a project for this repository first");
                     return null;
+                }else{
+                    if(element.Project.TodoLists && element.Project.TodoLists.length > 0){
+                        element.Project.TodoLists.forEach(subelement => {
+                            var item = new ProjectQuickTip(subelement.name, subelement.id,false);
+                            nodeList.push(item);
+                        });
+                    }else{
+                        vscode.window.showInformationMessage("Please wait for Project data to be loaded");
+                        this.RefreshData();
+                        return null;
+                    }
                 }
+
+
+
             }
         });
 
@@ -578,14 +618,12 @@ export class TeamworkProjects{
             
             savedConfig.ActiveProjectId = projectItem.id;
             savedConfig.ActiveProjectName = projectItem.name;
-            this.statusBarItem.text = "Active Project: " + projectItem;
+            this.statusBarItem.text = "Teamwork: " + projectItem.name;
 
             var path = vscode.workspace.rootPath + "/twp.json";
             let data = JSON.stringify(savedConfig);  
             fs.writeFileSync(path, data);
 
-            this.RefreshData();
-            vscode.commands.executeCommand("taskOutline.refresh");  
 
             return savedConfig;
         }
@@ -598,21 +636,26 @@ export class TeamworkProjects{
 
         // Load task lists
         var taskLists = await this.API.getTaskLists(context,parentNode.id,force);
-        let nodeList: TaskListNode[] = [];
+        let nodeList: INode[] = [];
         taskLists.forEach(element => {
             nodeList.push(new TaskListNode(element.name, parseInt(element.id),parentNode, null, this));
         });
 
-        this.statusBarItem.text = statusBarText;
+
+        if(taskLists.length === 0){
+            nodeList.push(new EmptyNode("No TaskLists",0));  
+        }
+
+
+        this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
         return nodeList; 
     }
    
     public async getTaskItems(context: vscode.ExtensionContext, node: TaskListNode,provider: TaskProvider, id: number = 0, force: boolean = false) : Promise<INode[]>{
-       
-        var statusBarText = this.statusBarItem.text;
+
         this.statusBarItem.text = "Loading tasks......";
 
-        let todoItems = await this.API.getTaskItems(context, id, force);
+        let todoItems = await this.API.getTaskItems(context, node.id, force);
         let nodeList: INode[] = []; 
 
         todoItems.forEach(element => {
@@ -629,7 +672,13 @@ export class TeamworkProjects{
                 this));
         });
 
-        this.statusBarItem.text = statusBarText;
+
+        if(todoItems.length === 0){
+            nodeList.push(new EmptyNode("No Tasks",0));  
+        }
+
+
+        this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
         return nodeList; 
     }
 

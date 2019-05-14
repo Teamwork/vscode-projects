@@ -53,7 +53,7 @@ export class TeamworkProjectsApi{
 
         context.globalState.update("twp.data.project",result.data.projects);
         context.globalState.update("twp.data.projects.lastUpdated", new Date() );
-        return result.projects;
+        return result.data.projects;
     }
 
     public async GetPeopleInProject(force: boolean = false,id: string) : Promise<Person[]>{
@@ -103,7 +103,7 @@ export class TeamworkProjectsApi{
         let lastUpdated : Date = context.globalState.get("twp.data.tasklists." + id + ".lastUpdated",new Date() );
         if(cachedNodes !== null && cachedNodes["data"]["todo-lists"].length > 0 && lastUpdated && !force){
             if(Utilities.DateCompare(lastUpdated,30)){
-                return cachedNodes["todo-lists"];
+                return cachedNodes["data"]["todo-lists"];
             }
         }
     
@@ -276,7 +276,6 @@ export class TeamworkProjectsApi{
         var task = new TaskQuickAdd();
         task.tasklistId = tasklistid;
         task.notify = false;
-        task["creator-id"] = 259828;
         task.private = false;
         task.content = title;
 

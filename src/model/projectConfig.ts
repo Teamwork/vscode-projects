@@ -9,7 +9,13 @@ export class ProjectConfig{
     constructor(projects) {
         this.Projects = projects;
 
-        if(this.ActiveProjectName.length < 1){
+        // Active Project no longer selected -> clear
+        if(!this.Projects.find(p=>p.Id === parseInt(this.ActiveProjectId))){
+            this.ActiveProjectName = "";
+            this.ActiveProjectId = "";
+        }
+
+        if(this.ActiveProjectName && this.ActiveProjectName.length < 1){
             if(projects ){
                 this.ActiveProjectName = projects[0].Name;
                 this.ActiveProjectId = projects[0].Id;

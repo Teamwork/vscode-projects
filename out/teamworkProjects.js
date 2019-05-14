@@ -17,7 +17,9 @@ const TaskListNode_1 = require("./model/nodes/TaskListNode");
 const TaskItemNode_1 = require("./model/nodes/TaskItemNode");
 const ProjectQuickTip_1 = require("./model/nodes/ProjectQuickTip");
 const projectConfig_1 = require("./model/projectConfig");
+const utilities_1 = require("./utilities");
 const teamworkProjectsApi_1 = require("./teamworkProjectsApi");
+const EmptyNode_1 = require("./model/nodes/EmptyNode");
 class TeamworkProjects {
     constructor(context, extensionPath) {
         this.context = context;
@@ -342,6 +344,7 @@ class TeamworkProjects {
             var fileName = editor.document.fileName.replace(workspaceRoot, "");
             var selection = editor.selection;
             var line = selection.start.line;
+            var cursor = selection.start.character;
             var text = editor.document.getText(selection);
             var list = yield this.GetTaskListQuickTip(true);
             if (list !== null && list.length > 0) {
@@ -350,18 +353,43 @@ class TeamworkProjects {
                     const result = yield vscode.window.showInputBox({
                         placeHolder: 'Task Title @person [today|tomorrow]',
                     });
+                    const gitExtension = vscode.extensions.getExtension('vscode.git').exports;
+                    var gitLink = "";
+                    var gitBranch = "";
+                    if (gitExtension) {
+                        const api = gitExtension.getAPI(1);
+                        if (api && api.repositories.length > 0) {
+                            var repo = api.repositories[0];
+                            var remote = repo.state.remotes[0];
+                            gitBranch = repo.state.HEAD.name;
+                            gitLink = remote.fetchUrl.replace(".git", "") + "/blob/" + gitBranch + fileName + "#L" + line;
+                        }
+                    }
                     var taskDescription = "Task added from VSCode: \n";
                     taskDescription += "File: " + fileName + "\n";
                     taskDescription += "Line: " + line + "\n";
-                    taskDescription += "Error Notes: " + "\n";
+                    if (gitBranch.length > 0) {
+                        taskDescription += "Branch:" + gitBranch + "\n";
+                    }
+                    if (gitLink.length > 0) {
+                        taskDescription += "Link:" + gitLink + "\n";
+                    }
+                    taskDescription += "Selection: " + "\n";
                     taskDescription += text;
                     var newTask = yield this.API.postTodoItem(this._context, parseInt(this.Config.ActiveProjectId), parseInt(taskList.id), result, taskDescription);
                     var config = vscode.workspace.getConfiguration('twp');
                     var root = config.get("APIRoot");
                     var id = newTask["data"]["taskIds"];
-                    var taskText = "#Task: " + root + "/tasks/" + id + "\n";
+                    var taskDetails = yield this.API.getTodoItem(this._context, parseInt(id), true);
+                    var langConfig = utilities_1.Utilities.GetActiveLanguageConfig();
+                    var commentWrapper = langConfig.comments.lineComment;
+                    var content = taskDetails.content;
+                    var responsible = taskDetails["responsible-party-names"];
                     editor.edit(edit => {
-                        edit.insert(new vscode.Position(line - 1, 0), taskText);
+                        edit.setEndOfLine(vscode.EndOfLine.CRLF);
+                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Task: " + content + "\r\n");
+                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Link: " + root + "/tasks/" + id + "\r\n");
+                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Assigned To: " + responsible + "\r\n" + "\r\n");
                     });
                     vscode.window.showInformationMessage("Task was added");
                 }
@@ -378,15 +406,17 @@ class TeamworkProjects {
             if (this.Config === null) {
                 this.Config = yield this.GetProjectForRepository();
             }
-            this.Config.Projects.forEach((element) => __awaiter(this, void 0, void 0, function* () {
-                this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
-                element.Project.TodoLists = yield this.API.getTaskLists(this._context, element.Id, true);
-                this.statusBarItem.text = "Teamwork: Refreshing TodoItems";
-                element.Project.TodoLists.forEach((subelement) => __awaiter(this, void 0, void 0, function* () {
-                    subelement.TodoItems = yield this.API.getTaskItems(this._context, parseInt(subelement.id), true);
+            if (this.Config.Projects !== null) {
+                this.Config.Projects.forEach((element) => __awaiter(this, void 0, void 0, function* () {
+                    this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
+                    element.Project.TodoLists = yield this.API.getTaskLists(this._context, element.Id, true);
+                    this.statusBarItem.text = "Teamwork: Refreshing TodoItems";
+                    element.Project.TodoLists.forEach((subelement) => __awaiter(this, void 0, void 0, function* () {
+                        subelement.TodoItems = yield this.API.getTaskItems(this._context, parseInt(subelement.id), true);
+                    }));
+                    this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
                 }));
-                this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
-            }));
+            }
             this.IsLoading = false;
         });
     }
@@ -396,7 +426,7 @@ class TeamworkProjects {
     GetProjectQuickTips(force = false, selected, includePeople = false) {
         return __awaiter(this, void 0, void 0, function* () {
             let nodeList = [];
-            let projects = yield this.API.GetProjects(this._context, force, includePeople);
+            this.Projects = yield this.API.GetProjects(this._context, force, includePeople);
             this.Projects.forEach(element => {
                 var isPicked = false;
                 if (selected && selected.length > 0 && selected.find(p => p.Id.toString() === element.id)) {
@@ -405,7 +435,7 @@ class TeamworkProjects {
                 var item = new ProjectQuickTip_1.ProjectQuickTip(element.name, element.id, isPicked);
                 nodeList.push(item);
             });
-            this._context.globalState.update("twp.data.projects", projects);
+            this._context.globalState.update("twp.data.projects", this.Projects);
             this._context.globalState.update("twp.data.projects.lastUpdated", Date.now());
             return nodeList;
         });
@@ -413,18 +443,27 @@ class TeamworkProjects {
     GetTaskListQuickTip(force = false, includePeople = false) {
         return __awaiter(this, void 0, void 0, function* () {
             let nodeList = [];
+            if (this.Config === null) {
+                this.Config = yield this.GetProjectForRepository();
+            }
             this.Config.Projects.forEach(element => {
                 if (element.Id.toString() === this.Config.ActiveProjectId) {
-                    if (element.Project.TodoLists && element.Project.TodoLists.length > 0) {
-                        element.Project.TodoLists.forEach(subelement => {
-                            var item = new ProjectQuickTip_1.ProjectQuickTip(subelement.name, subelement.id, false);
-                            nodeList.push(item);
-                        });
+                    if (element.Project === undefined || element.Project === null) {
+                        vscode.window.showInformationMessage("Please pick a project for this repository first");
+                        return null;
                     }
                     else {
-                        vscode.window.showInformationMessage("Please wait for Project data to be loaded");
-                        this.RefreshData();
-                        return null;
+                        if (element.Project.TodoLists && element.Project.TodoLists.length > 0) {
+                            element.Project.TodoLists.forEach(subelement => {
+                                var item = new ProjectQuickTip_1.ProjectQuickTip(subelement.name, subelement.id, false);
+                                nodeList.push(item);
+                            });
+                        }
+                        else {
+                            vscode.window.showInformationMessage("Please wait for Project data to be loaded");
+                            this.RefreshData();
+                            return null;
+                        }
                     }
                 }
             });
@@ -487,12 +526,10 @@ class TeamworkProjects {
             if (projectItem) {
                 savedConfig.ActiveProjectId = projectItem.id;
                 savedConfig.ActiveProjectName = projectItem.name;
-                this.statusBarItem.text = "Active Project: " + projectItem;
+                this.statusBarItem.text = "Teamwork: " + projectItem.name;
                 var path = vscode.workspace.rootPath + "/twp.json";
                 let data = JSON.stringify(savedConfig);
                 fs.writeFileSync(path, data);
-                this.RefreshData();
-                vscode.commands.executeCommand("taskOutline.refresh");
                 return savedConfig;
             }
         });
@@ -507,20 +544,25 @@ class TeamworkProjects {
             taskLists.forEach(element => {
                 nodeList.push(new TaskListNode_1.TaskListNode(element.name, parseInt(element.id), parentNode, null, this));
             });
-            this.statusBarItem.text = statusBarText;
+            if (taskLists.length === 0) {
+                nodeList.push(new EmptyNode_1.EmptyNode("No TaskLists", 0));
+            }
+            this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
             return nodeList;
         });
     }
     getTaskItems(context, node, provider, id = 0, force = false) {
         return __awaiter(this, void 0, void 0, function* () {
-            var statusBarText = this.statusBarItem.text;
             this.statusBarItem.text = "Loading tasks......";
-            let todoItems = yield this.API.getTaskItems(context, id, force);
+            let todoItems = yield this.API.getTaskItems(context, node.id, force);
             let nodeList = [];
             todoItems.forEach(element => {
                 nodeList.push(new TaskItemNode_1.TaskItemNode(element.content, element["responsible-party-summary"], "", element.id, element.priority, element.hasTickets, element.completed, element["responsible-party-ids"], node, "taskItem", provider, this));
             });
-            this.statusBarItem.text = statusBarText;
+            if (todoItems.length === 0) {
+                nodeList.push(new EmptyNode_1.EmptyNode("No Tasks", 0));
+            }
+            this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
             return nodeList;
         });
     }

@@ -52,7 +52,7 @@ class TeamworkProjectsApi {
             }
             context.globalState.update("twp.data.project", result.data.projects);
             context.globalState.update("twp.data.projects.lastUpdated", new Date());
-            return result.projects;
+            return result.data.projects;
         });
     }
     GetPeopleInProject(force = false, id) {
@@ -97,7 +97,7 @@ class TeamworkProjectsApi {
             let lastUpdated = context.globalState.get("twp.data.tasklists." + id + ".lastUpdated", new Date());
             if (cachedNodes !== null && cachedNodes["data"]["todo-lists"].length > 0 && lastUpdated && !force) {
                 if (utilities_1.Utilities.DateCompare(lastUpdated, 30)) {
-                    return cachedNodes["todo-lists"];
+                    return cachedNodes["data"]["todo-lists"];
                 }
             }
             const url = root + '/projects/' + id + '/todo_lists.json?getNewTaskDefaults=true&nestSubTasks=false';
@@ -246,7 +246,6 @@ class TeamworkProjectsApi {
             var task = new taskQuickAdd_1.TaskQuickAdd();
             task.tasklistId = tasklistid;
             task.notify = false;
-            task["creator-id"] = 259828;
             task.private = false;
             task.content = title;
             var todoDetails = new taskQuickAdd_1.TodoItemQuick();
