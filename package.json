@@ -82,8 +82,8 @@
 				"command": "twp.completeTask",
 				"title": "Complete Task",
 				"icon": {
-					"light": "media/task.svg",
-					"dark": "media/task.svg"
+					"light": "resources/task.svg",
+					"dark": "resources/task.svg"
 				}
 			},
 			{

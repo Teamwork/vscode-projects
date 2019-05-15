@@ -25,8 +25,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	setTimeout( () => twp.RefreshData(),1*60*1000);
 
 	vscode.commands.registerCommand('taskOutline.refresh', task => {
+		twp.RefreshData();
 		taskProvider.refresh();
-	});
+		}
+	);
 
 	vscode.commands.registerCommand('taskOutline.showElement',task  => {
 		twp.openResource(task);

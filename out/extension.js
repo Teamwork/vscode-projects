@@ -25,6 +25,7 @@ function activate(context) {
         twp.statusBarItem.tooltip = "Click to refresh Project Data";
         setTimeout(() => twp.RefreshData(), 1 * 60 * 1000);
         vscode.commands.registerCommand('taskOutline.refresh', task => {
+            twp.RefreshData();
             taskProvider.refresh();
         });
         vscode.commands.registerCommand('taskOutline.showElement', task => {
