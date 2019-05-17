@@ -8,7 +8,7 @@
 		"url": "https://github.com/teamwork/vscode-projects/issues",
 		"email": "integrations@teamwork.com"
 	},
-	"icon": "media/projects.png",
+	"icon": "resources/projects.png",
 	"repository": {
 		"type": "Github",
 		"url": "https://github.com/Teamwork/vscode-projects"
@@ -25,7 +25,7 @@
 			"url": "https://twitter.com/Teamwork"
 		}
 	],
-	"version": "0.5.9",
+	"version": "0.6.0",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
@@ -109,7 +109,8 @@
 					"light": "resources/projects-white.svg",
 					"dark": "resources/projects-white.svg"
 				}
-			},{
+			},
+			{
 				"command": "twp.SetActiveProject",
 				"title": "Select the Active Project for Repository"
 			},
@@ -140,7 +141,6 @@
 					"light": "resources/icons/clear_filter_light.svg",
 					"dark": "resources/icons/clear_filter_dark.svg"
 				}
-
 			}
 		],
 		"menus": {
@@ -148,7 +148,7 @@
 				{
 					"command": "twp.linkTask",
 					"group": "twpGroup"
-			  }
+				}
 			],
 			"view/item/context": [
 				{

@@ -15,6 +15,12 @@ This extension contributes the following settings:
 * Teamwork Embedded view not working due to CORS issues
 
 ## Release Notes
+### 0.6.0
+** This is a pre-release version and under development **
+* Active Project - Can now set the active project by clicking on the taskbar label
+* Adding Tasks - Select any piece of code - right click - add a task
+* Add tasks is using the active project as target
+
 ### 0.5.89
 ** This is a pre-release version and under development **
 * just css fixes and changes to host config
