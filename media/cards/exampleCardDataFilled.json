@@ -2,11 +2,6 @@
     "type": "AdaptiveCard",
     "body": [
         {
-            "type": "Image",
-            "url": "https://s3.amazonaws.com/tw-desk/i/1/doclogo/197378.20190228210102000.197378.20190228210102000rlycm.png",
-            "size": "large"
-        },
-        {
             "type": "Container",
             "items": [
                 {

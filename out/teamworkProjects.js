@@ -232,12 +232,22 @@ class TeamworkProjects {
                 const jqueryPath = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'jquery.min.js'));
                 const jqueryUri = jqueryPath.with({ scheme: 'vscode-resource' });
                 // AdaptiveCards
-                const ACPath = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'adaptivecards.min.js'));
-                const ACUri = ACPath.with({ scheme: 'vscode-resource' });
-                const MarkdownPath = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'markdown-it.min.js'));
-                const MarkdownUri = MarkdownPath.with({ scheme: 'vscode-resource' });
-                const mainstyle = vscode.Uri.file(path.join(this._extensionPath, 'media/css', 'msteamsstyle.css'));
-                const mainstyleUri = mainstyle.with({ scheme: 'vscode-resource' });
+                let url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'fabric.min.js'));
+                const FabricUri = url.with({ scheme: 'vscode-resource' });
+                url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'adaptivecards.min.js'));
+                const ACUri = url.with({ scheme: 'vscode-resource' });
+                url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'adaptivecards-fabric.min.js'));
+                const ACUFabricUri = url.with({ scheme: 'vscode-resource' });
+                url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'react.min.js'));
+                const ReactUri = url.with({ scheme: 'vscode-resource' });
+                url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'react-dom.min.js'));
+                const ReactDomUri = url.with({ scheme: 'vscode-resource' });
+                url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'markdown-it.min.js'));
+                const MarkdownUri = url.with({ scheme: 'vscode-resource' });
+                url = vscode.Uri.file(path.join(this._extensionPath, 'media/css', 'msteamsstyle.css'));
+                const mainstyleUri = url.with({ scheme: 'vscode-resource' });
+                url = vscode.Uri.file(path.join(this._extensionPath, 'media/css', 'fabric.components.min.css'));
+                const FabricStyleUri = url.with({ scheme: 'vscode-resource' });
                 const ACstyle = vscode.Uri.file(path.join(this._extensionPath, 'media/css', 'editormain.css'));
                 const ACStyleUri = ACstyle.with({ scheme: 'vscode-resource' });
                 const nonce = this.getNonce();
@@ -251,12 +261,20 @@ class TeamworkProjects {
 
                         <link rel="stylesheet" href="${mainstyleUri}"  nonce="${nonce}"  type="text/css" />
                         <link rel="stylesheet" href="${ACStyleUri}"  nonce="${nonce}"  type="text/css" />
+                        <link rel="stylesheet" href="${FabricStyleUri}"  nonce="${nonce}"  type="text/css" />
                     </head>
                     <body>
                         <div id="exampleDiv"></div>
                         <div id="out"></div>
                         <script nonce="${nonce}" src="${jqueryUri}"></script>
+                        <script nonce="${nonce}" src="${ReactUri}"></script>
+                        <script nonce="${nonce}" src="${ReactDomUri}"></script>
+  
+                        <script nonce="${nonce}" src="${FabricUri}"></script>
                         <script nonce="${nonce}" src="${ACUri}"></script>
+                        <script nonce="${nonce}" src="${ACUFabricUri}"></script>
+                        
+
                         <script nonce="${nonce}" src="${MarkdownUri}"></script>
                         <script nonce="${nonce}" src="${scriptUri}"></script>
                         <div id="divData" style='display:none;'>
