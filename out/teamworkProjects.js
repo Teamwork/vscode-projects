@@ -416,6 +416,12 @@ class TeamworkProjects {
     }
     RefreshData() {
         return __awaiter(this, void 0, void 0, function* () {
+            var config = vscode.workspace.getConfiguration('twp');
+            var token = config.get("APIKey");
+            var root = config.get("APIRoot");
+            if (!token || !root) {
+                return;
+            }
             if (this.IsLoading) {
                 return;
             }
@@ -491,6 +497,12 @@ class TeamworkProjects {
     GetProjectForRepository() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                var userConfig = vscode.workspace.getConfiguration('twp');
+                var token = userConfig.get("APIKey");
+                var root = userConfig.get("APIRoot");
+                if (!token || !root) {
+                    return;
+                }
                 var path = vscode.workspace.rootPath + "/twp.json";
                 let config;
                 if (fs.existsSync(path)) {
@@ -507,6 +519,21 @@ class TeamworkProjects {
                 console.error(error);
                 return new projectConfig_1.ProjectConfig(null);
             }
+        });
+    }
+    SelectAccount() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.panel = vscode.window.createWebviewPanel("twp.TaskPreview", "Teamwork Projects, Login", vscode.ViewColumn.Beside, {
+                enableScripts: true,
+                localResourceRoots: [
+                    vscode.Uri.file(path.join(this._extensionPath, 'media'))
+                ]
+            });
+            this.panel.iconPath = {
+                light: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg')),
+                dark: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg'))
+            };
+            return true;
         });
     }
     SelectProject() {

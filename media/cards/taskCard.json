@@ -303,23 +303,6 @@
                         "isMultiline": true
                     },
                     {
-						"id":"selItem",
-                        "type": "Input.ChoiceSet",
-						"placeholder": "Placeholder text",
-						"style":"compact",
-                        "choices": [
-                            {
-                                "title": "Choice 1",
-                                "value": "Choice 1"
-                            },
-                            {
-                                "title": "Choice 2",
-                                "value": "Choice 2"
-							}
-						
-                        ]
-                    },
-                    {
                         "id": "comment",
                         "type": "Input.Toggle",
                         "placeholder": "Your comment",

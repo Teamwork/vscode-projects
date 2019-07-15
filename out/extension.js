@@ -19,11 +19,13 @@ function activate(context) {
         // Refresh Data on startup and setup status bar
         twp.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 0);
         twp.Config = yield twp.GetProjectForRepository();
-        twp.statusBarItem.command = "twp.SetActiveProject";
-        twp.statusBarItem.show();
-        twp.statusBarItem.text = twp.Config.ActiveProjectName;
-        twp.statusBarItem.tooltip = "Click to refresh Project Data";
-        setTimeout(() => twp.RefreshData(), 1 * 60 * 1000);
+        if (twp.Config !== undefined) {
+            twp.statusBarItem.command = "twp.SetActiveProject";
+            twp.statusBarItem.show();
+            twp.statusBarItem.text = twp.Config.ActiveProjectName;
+            twp.statusBarItem.tooltip = "Click to refresh Project Data";
+            setTimeout(() => twp.RefreshData(), 1 * 60 * 1000);
+        }
         vscode.commands.registerCommand('taskOutline.refresh', task => {
             twp.RefreshData();
             taskProvider.refresh();
@@ -41,6 +43,7 @@ function activate(context) {
         vscode.commands.registerCommand('twp.SetProject', task => { twp.SelectProject(); });
         vscode.commands.registerCommand('twp.RefreshData', task => { twp.RefreshData(); });
         vscode.commands.registerCommand('twp.linkTask', task => { twp.QuickAddTask(); });
+        vscode.commands.registerCommand('twp.SetAccount', task => { twp.SelectAccount(); });
         // Refresh data once every 30 minutes
         setInterval(twp.RefreshData, 30 * 60 * 1000);
     });

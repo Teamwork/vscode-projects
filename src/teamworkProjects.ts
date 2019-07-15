@@ -485,6 +485,15 @@ export class TeamworkProjects{
 
     public async RefreshData(){
 
+        var config = vscode.workspace.getConfiguration('twp');
+        var token = config.get("APIKey");
+        var root = config.get("APIRoot");
+        
+        if(!token || !root){
+            return; 
+        }
+
+
         if(this.IsLoading){
             return;
         }
@@ -578,6 +587,15 @@ export class TeamworkProjects{
 
     public async GetProjectForRepository(): Promise<ProjectConfig>{
         try{
+
+            var userConfig = vscode.workspace.getConfiguration('twp');
+            var token = userConfig.get("APIKey");
+            var root = userConfig.get("APIRoot");
+            
+            if(!token || !root){
+                return; 
+            }
+
             var path = vscode.workspace.rootPath + "/twp.json";
             let config : ProjectConfig;
 
@@ -595,6 +613,20 @@ export class TeamworkProjects{
             console.error(error);
             return new ProjectConfig(null);
         }
+    }
+
+    public async SelectAccount() : Promise<Boolean>{
+        this.panel = vscode.window.createWebviewPanel("twp.TaskPreview","Teamwork Projects, Login",vscode.ViewColumn.Beside,{
+            enableScripts: true,
+            localResourceRoots: [
+                vscode.Uri.file(path.join(this._extensionPath, 'media'))
+            ]                
+          });
+          this.panel.iconPath = {
+            light: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg')),
+            dark: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg'))
+          };
+        return true;
     }
 
     public async SelectProject() : Promise<ProjectConfig>{

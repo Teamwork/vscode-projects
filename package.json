@@ -103,6 +103,14 @@
 				}
 			},
 			{
+				"command": "twp.SetAccount",
+				"title": "Account",
+				"icon": {
+					"light": "resources/projects-white.svg",
+					"dark": "resources/projects-white.svg"
+				}
+			},
+			{
 				"command": "twp.SetProject",
 				"title": "Select Project for Repository",
 				"icon": {
@@ -165,6 +173,11 @@
 				},
 				{
 					"command": "twp.SetProject",
+					"when": "view == taskOutline",
+					"group": "navigation"
+				},
+				{
+					"command": "twp.SetAccount",
 					"when": "view == taskOutline",
 					"group": "navigation"
 				}

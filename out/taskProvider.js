@@ -40,8 +40,17 @@ class TaskProvider {
                         return items;
                     }
                     if (!config) {
-                        items.push(new ProjectErrorNode_1.ProjectErrorNode("-> Select Project for Repository", "", "", 0));
-                        return items;
+                        var userConfig = vscode.workspace.getConfiguration('twp');
+                        var token = userConfig.get("APIKey");
+                        var root = userConfig.get("APIRoot");
+                        if (!token || !root) {
+                            items.push(new ProjectErrorNode_1.ProjectErrorNode("-> Please login first.", "", "", 0));
+                            return items;
+                        }
+                        else {
+                            items.push(new ProjectErrorNode_1.ProjectErrorNode("-> Select Project for Repository", "", "", 0));
+                            return items;
+                        }
                     }
                 }
                 return element.getChildren(this.context);

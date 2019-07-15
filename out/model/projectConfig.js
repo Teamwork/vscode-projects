@@ -3,6 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 class ProjectConfig {
     constructor(projects) {
         this.Projects = projects;
+        if (this.Projects === undefined) {
+            this.ActiveProjectName = "No Project Selected";
+            this.ActiveProjectId = "0";
+            return;
+        }
         // Active Project no longer selected -> clear
         if (!this.Projects.find(p => p.Id === parseInt(this.ActiveProjectId))) {
             this.ActiveProjectName = "";
