@@ -11,8 +11,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const vscode = require("vscode");
 const fs = require("fs");
-const templateEngine_1 = require("./adaptiveCards/templateEngine");
-const expressionParser_1 = require("./adaptiveCards/expressionParser");
 const TaskListNode_1 = require("./model/nodes/TaskListNode");
 const TaskItemNode_1 = require("./model/nodes/TaskItemNode");
 const ProjectQuickTip_1 = require("./model/nodes/ProjectQuickTip");
@@ -20,6 +18,7 @@ const projectConfig_1 = require("./model/projectConfig");
 const utilities_1 = require("./utilities");
 const teamworkProjectsApi_1 = require("./teamworkProjectsApi");
 const EmptyNode_1 = require("./model/nodes/EmptyNode");
+const webviews_1 = require("./webviews");
 class TeamworkProjects {
     constructor(context, extensionPath) {
         this.context = context;
@@ -28,6 +27,7 @@ class TeamworkProjects {
         this._context = context;
         this._extensionPath = extensionPath;
         this.API = new teamworkProjectsApi_1.TeamworkProjectsApi();
+        this.WebViews = new webviews_1.WebViews(this._context, this._extensionPath);
     }
     dispose() {
         // Clean up our resources
@@ -46,7 +46,7 @@ class TeamworkProjects {
             if (this.panel) {
                 this.panel.reveal(column);
                 this.panel.title = taskItem.label;
-                this.panel.webview.html = this.GetWebViewContentLoader();
+                this.panel.webview.html = this.WebViews.GetWebViewContentLoader();
                 this.panel.webview.html = yield this.GetWebViewContent(taskItem.id);
             }
             else {
@@ -60,17 +60,17 @@ class TeamworkProjects {
                     light: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg')),
                     dark: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg'))
                 };
-                this.panel.webview.html = this.GetWebViewContentLoader();
+                this.panel.webview.html = this.WebViews.GetWebViewContentLoader();
                 this.panel.webview.html = yield this.GetWebViewContent(taskItem.id);
                 this.panel.webview.onDidReceiveMessage((message) => __awaiter(this, void 0, void 0, function* () {
                     var data = JSON.parse(message.text);
                     switch (data.type) {
                         case 'comment':
-                            this.panel.webview.html = this.GetWebViewContentLoader();
+                            this.panel.webview.html = this.WebViews.GetWebViewContentLoader();
                             this.CreateComment(data.taskId, data.comment);
                             return;
                         case 'complete':
-                            this.panel.webview.html = this.GetWebViewContentLoader();
+                            this.panel.webview.html = this.WebViews.GetWebViewContentLoader();
                             this.CompleteTask(data.taskId);
                             return;
                     }
@@ -165,189 +165,12 @@ class TeamworkProjects {
             var config = vscode.workspace.getConfiguration('twp');
             var showTeamworkPanel = config.get("ShowTeamworkPanel");
             if (showTeamworkPanel) {
-                return yield this.GetWebViewContentTeamwork(taskItem, force);
+                return yield this.WebViews.GetWebViewContentTeamwork(taskItem, force);
             }
             else {
-                return yield this.GetWebViewContentAdaptiveCard(taskItem, force);
+                return yield this.WebViews.GetWebViewContentAdaptiveCard(taskItem, force);
             }
         });
-    }
-    GetWebViewContentLoader() {
-        // jquery
-        const jqueryPath = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'jquery.min.js'));
-        const jqueryUri = jqueryPath.with({ scheme: 'vscode-resource' });
-        const nonce = this.getNonce();
-        const ACstyle = vscode.Uri.file(path.join(this._extensionPath, 'media/css', 'loader.css'));
-        const ACStyleUri = ACstyle.with({ scheme: 'vscode-resource' });
-        return `<!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Cat Coding</title>
-                        <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
-                        <script nonce="${nonce}" src="${jqueryUri}"></script>
-                        <link rel="stylesheet" href="${ACStyleUri}"  nonce="${nonce}"  type="text/css" />
-                    </head>
-                    <body style='background:#2D2B2C;height:800px;width:400px;'>
-                            <div id="app-loader" class="app-loader" >
-                            <svg class="app-loader__-logo" xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 160 128">
-                                <defs>
-                                    <style>
-                                        .cls-1 {
-                                            fill: #ffffff;
-                                        }
-                        
-                                        .cls-2 {
-                                            fill: #ffffff;
-                                        }
-                                    </style>
-                                </defs>
-                                <circle class="cls-1" cx="118" cy="86" r="12"></circle>
-                                <path class="cls-2" d="M160,48a32,32,0,0,0-32-32H63.59A20.07,20.07,0,0,0,44,0H20A20.06,20.06,0,0,0,0,20V96a32,32,0,0,0,32,32h96a32,32,0,0,0,32-32Zm-32,64H32A16,16,0,0,1,16,96V32H128a16,16,0,0,1,16,16V96A16,16,0,0,1,128,112Z"></path>
-                            </svg>
-                            <p class="w-app-preloading__installation-name" style='color:#ffffff'>
-                                please wait...
-                            </p>
-                            <div class="app-loader__loading-bar"></div>
-                        </div>
-                    </body>
-                    </html>`;
-    }
-    GetWebViewContentAdaptiveCard(taskItem, force = false) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var todo = yield this.API.getTodoItem(this._context, taskItem, force);
-            if (todo) {
-                const templateFile = require(path.join(this._extensionPath, 'media/cards', 'taskCard.json'));
-                var _templatePayload = templateFile;
-                let template = new templateEngine_1.Template(_templatePayload);
-                let context = new expressionParser_1.EvaluationContext();
-                context.$root = todo;
-                let expandedTemplatePayload = template.expand(context);
-                // Local path to main script run in the webview
-                const scriptPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'mainAdaptive.js'));
-                // And the uri we use to load this script in the webview
-                const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
-                // jquery
-                const jqueryPath = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'jquery.min.js'));
-                const jqueryUri = jqueryPath.with({ scheme: 'vscode-resource' });
-                // AdaptiveCards
-                let url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'fabric.min.js'));
-                const FabricUri = url.with({ scheme: 'vscode-resource' });
-                url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'adaptivecards.min.js'));
-                const ACUri = url.with({ scheme: 'vscode-resource' });
-                url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'adaptivecards-fabric.min.js'));
-                const ACUFabricUri = url.with({ scheme: 'vscode-resource' });
-                url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'react.min.js'));
-                const ReactUri = url.with({ scheme: 'vscode-resource' });
-                url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'react-dom.min.js'));
-                const ReactDomUri = url.with({ scheme: 'vscode-resource' });
-                url = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'markdown-it.min.js'));
-                const MarkdownUri = url.with({ scheme: 'vscode-resource' });
-                url = vscode.Uri.file(path.join(this._extensionPath, 'media/css', 'msteamsstyle.css'));
-                const mainstyleUri = url.with({ scheme: 'vscode-resource' });
-                url = vscode.Uri.file(path.join(this._extensionPath, 'media/css', 'fabric.components.min.css'));
-                const FabricStyleUri = url.with({ scheme: 'vscode-resource' });
-                const ACstyle = vscode.Uri.file(path.join(this._extensionPath, 'media/css', 'editormain.css'));
-                const ACStyleUri = ACstyle.with({ scheme: 'vscode-resource' });
-                const nonce = this.getNonce();
-                return `<!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Cat Coding</title>
-                        <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
-
-                        <link rel="stylesheet" href="${mainstyleUri}"  nonce="${nonce}"  type="text/css" />
-                        <link rel="stylesheet" href="${ACStyleUri}"  nonce="${nonce}"  type="text/css" />
-                        <link rel="stylesheet" href="${FabricStyleUri}"  nonce="${nonce}"  type="text/css" />
-                    </head>
-                    <body>
-                        <div id="exampleDiv"></div>
-                        <div id="out"></div>
-                        <script nonce="${nonce}" src="${jqueryUri}"></script>
-                        <script nonce="${nonce}" src="${ReactUri}"></script>
-                        <script nonce="${nonce}" src="${ReactDomUri}"></script>
-  
-                        <script nonce="${nonce}" src="${FabricUri}"></script>
-                        <script nonce="${nonce}" src="${ACUri}"></script>
-                        <script nonce="${nonce}" src="${ACUFabricUri}"></script>
-                        
-
-                        <script nonce="${nonce}" src="${MarkdownUri}"></script>
-                        <script nonce="${nonce}" src="${scriptUri}"></script>
-                        <div id="divData" style='display:none;'>
-                            ${JSON.stringify(expandedTemplatePayload)}
-                        </div>
-                    </body>
-                    </html>`;
-            }
-        });
-    }
-    GetWebViewContentTeamwork(taskItem, force = false) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var config = vscode.workspace.getConfiguration('twp');
-            var root = config.get("APIRoot");
-            var auth = "Basic " + Buffer.from(config.get("APIKey") + ":xxxxxx").toString("base64");
-            var todo = yield this.API.getTodoItem(this._context, taskItem);
-            if (todo) {
-                const nonce = this.getNonce();
-                const scriptPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'mainTeamwork.js'));
-                // And the uri we use to load this script in the webview
-                const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
-                // jquery
-                const jqueryPath = vscode.Uri.file(path.join(this._extensionPath, 'media/js', 'jquery.min.js'));
-                const jqueryUri = jqueryPath.with({ scheme: 'vscode-resource' });
-                return `<!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Cat Coding</title>
-                        <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
-                        <script nonce="${nonce}" src="${jqueryUri}"></script>
-                        <script nonce="${nonce}" src="${scriptUri}"></script>
-                        <script type="text/javascript" nonce="${nonce}">
-                            $(document).ready(function () {
-        
-                                $.ajax({
-                                    url: '${root}' + 'me.json',
-                                    headers: {
-                                        'Authorization': '${auth}',
-                                    },
-                                    dataType: 'json',
-                                    method: 'GET',
-                                    crossDomain: true,
-                                    success: function(data) {
-
-                                    },
-                                    error: function() {
-                                        var frameUrl = '${root}' + '?embeddedView=1#embed?view=viewTask&params=' + encodeURIComponent(JSON.stringify({ taskId: parseInt("${taskItem}") }))
-                                        $('#frmTasks').attr('src', frameUrl);
-                                    },
-                                    xhrFields: {
-                                        withCredentials: true
-                                    }
-                                });
-                            });
-    
-                        </script>
-                    </head>
-                    <body>
-                        <iframe id="frmTasks" allowtransparency="true" frameborder="0" style="display:none;overflow:hidden;height:97%;width:100%" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-pointer-lock allow-scripts allow-same-origin"></iframe>
-                    </body>
-                    </html>`;
-            }
-        });
-    }
-    getNonce() {
-        let text = "";
-        const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        for (let i = 0; i < 32; i++) {
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
-        return text;
     }
     QuickAddTask() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -523,16 +346,22 @@ class TeamworkProjects {
     }
     SelectAccount() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.panel = vscode.window.createWebviewPanel("twp.TaskPreview", "Teamwork Projects, Login", vscode.ViewColumn.Beside, {
+            this.loginPanel = vscode.window.createWebviewPanel("twp.TaskPreview", "Teamwork Projects, Login", vscode.ViewColumn.Beside, {
                 enableScripts: true,
                 localResourceRoots: [
                     vscode.Uri.file(path.join(this._extensionPath, 'media'))
                 ]
             });
-            this.panel.iconPath = {
+            this.loginPanel.iconPath = {
                 light: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg')),
                 dark: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg'))
             };
+            this.loginPanel.webview.html = this.WebViews.GetWebViewContentLoader();
+            this.loginPanel.webview.onDidReceiveMessage((message) => __awaiter(this, void 0, void 0, function* () {
+            }));
+            this.panel.onDidDispose(task => {
+                this.dispose();
+            });
             return true;
         });
     }
