@@ -14,6 +14,7 @@ const taskQuickAdd_1 = require("./model/taskQuickAdd");
 const teamworkAccount_1 = require("./model/teamworkAccount");
 const util_1 = require("util");
 class TeamworkProjectsApi {
+    //todo -> add constructor with account
     GetProjects(context, force = false, includePeople = false, getAll = false, getList = "") {
         return __awaiter(this, void 0, void 0, function* () {
             var axios = require("axios");
@@ -35,13 +36,10 @@ class TeamworkProjectsApi {
             }
             if (!result) {
                 const url = root + '/tasks/projects.json?type=canAddItem&pageSize=200';
+                axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` };
                 result = yield axios({
                     method: 'get',
                     url,
-                    auth: {
-                        username: token,
-                        password: 'xxxxxxxxxxxxx'
-                    }
                 })
                     .catch(function (error) {
                     console.log(error);
@@ -72,13 +70,10 @@ class TeamworkProjectsApi {
                 return;
             }
             var url = root + '/projects/' + id + "/people.json";
+            axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` };
             let json = yield axios({
                 method: 'get',
-                url,
-                auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-                }
+                url
             })
                 .catch(function (error) {
                 console.log(error);
@@ -107,13 +102,10 @@ class TeamworkProjectsApi {
                 }
             }
             const url = root + '/projects/' + id + '/todo_lists.json?getNewTaskDefaults=true&nestSubTasks=false';
+            axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` };
             response = yield axios({
                 method: 'get',
-                url,
-                auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-                }
+                url
             })
                 .catch(function (error) {
                 console.log(error);
@@ -144,13 +136,10 @@ class TeamworkProjectsApi {
                 }
             }
             const url = root + '/tasklists/' + id + '/tasks.json';
+            axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` };
             todoResponse = yield axios({
                 method: 'get',
                 url,
-                auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-                }
             })
                 .catch(function (error) {
                 console.log(error);
@@ -180,10 +169,10 @@ class TeamworkProjectsApi {
                 let json = yield axios({
                     method: 'get',
                     url,
-                    auth: {
-                        username: token,
-                        password: 'xxxxxxxxxxxxx'
-                    }
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        "Content-Type": "application/json",
+                    },
                 })
                     .catch(function (error) {
                     console.log(error);
@@ -262,12 +251,9 @@ class TeamworkProjectsApi {
                 data: task,
                 url: url,
                 headers: {
+                    'Authorization': 'Bearer ' + token,
                     "Content-Type": "application/json",
                 },
-                auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-                }
             })
                 .catch(function (error) {
                 console.log(error);
