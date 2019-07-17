@@ -65,6 +65,39 @@ export class WebViews{
 
     }
 
+    public GetWebViewLogin(){
+           
+        // jquery
+        const jqueryPath = vscode.Uri.file(	path.join(this._extensionPath, 'media/js', 'jquery.min.js'));
+        const jqueryUri = jqueryPath.with({ scheme: 'vscode-resource' });
+
+        const scriptPath = vscode.Uri.file(	path.join(this._extensionPath, 'media/js', 'mainTeamwork.js'));
+        const scriptUri = scriptPath.with({ scheme: 'vscode-resource' });
+
+        const nonce = this.getNonce();
+
+        const ACstyle = vscode.Uri.file(	path.join(this._extensionPath, 'media/css', 'loader.css'));
+        const ACStyleUri = ACstyle.with({ scheme: 'vscode-resource' });
+
+        return `<!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Cat Coding</title>
+                    <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
+                    <script nonce="${nonce}" src="${jqueryUri}"></script>
+                    <script nonce="${nonce}" src="${scriptUri}"></script>
+                    <link rel="stylesheet" href="${ACStyleUri}"  nonce="${nonce}"  type="text/css" />
+                </head>
+                <body style='background:#2D2B2C;height:800px;width:400px;'>
+                    
+                </body>
+                </html>`;
+
+
+    }
+
     public async GetWebViewContentAdaptiveCard(taskItem: number, force: boolean = false)  {
         var todo = await this.API.getTodoItem(this._context, taskItem,force);
         if(todo){

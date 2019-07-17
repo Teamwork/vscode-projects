@@ -6,14 +6,15 @@ import { TodoItem, TaskItemResponse} from './model/responses/TaskItemResponse';
 import { Project, ProjectListResponse} from './model/responses/projectListResponse';
 import { Person, PeopleResponse} from './model/responses/peopleResponse';
 import { TaskQuickAdd, TodoItemQuick } from './model/taskQuickAdd';
+import { TeamworkAccount } from './model/teamworkAccount';
 
 export class TeamworkProjectsApi{
 
     public async GetProjects(context: vscode.ExtensionContext, force: boolean = false, includePeople: boolean= false, getAll: boolean = false, getList: string = "") : Promise<Project[]>{
         var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
+        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
+        let token = userData.token;
+        let root = userData.rootUrl;
         
         if(!token || !root){
             vscode.window.showErrorMessage("Please Configure the extension first!"); 
@@ -47,7 +48,7 @@ export class TeamworkProjectsApi{
 
         if(includePeople){
             result.data.projects.forEach(async element =>{
-                element.people = await this.GetPeopleInProject(force,element.id);
+                element.people = await this.GetPeopleInProject(context,force,element.id);
             });
         }
 
@@ -56,13 +57,13 @@ export class TeamworkProjectsApi{
         return result.data.projects;
     }
 
-    public async GetPeopleInProject(force: boolean = false,id: string) : Promise<Person[]>{
+    public async GetPeopleInProject(context: vscode.ExtensionContext,force: boolean = false,id: string) : Promise<Person[]>{
 
         var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
-        
+        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
+        let token = userData.token;
+        let root = userData.rootUrl;
+
         if(!token || !root){
             vscode.window.showErrorMessage("Please Configure the extension first!"); 
             return; 
@@ -86,9 +87,9 @@ export class TeamworkProjectsApi{
     
     public async getTaskLists(context: vscode.ExtensionContext, id: number = 0, force: boolean = false) : Promise<TodoList[]>{
         var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
+        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
+        let token = userData.token;
+        let root = userData.rootUrl;
         
         if(!token || !root){
             vscode.window.showErrorMessage("Please Configure the extension first!"); 
@@ -129,9 +130,9 @@ export class TeamworkProjectsApi{
 
     public async getTaskItems(context: vscode.ExtensionContext, id: number = 0, force: boolean = false) : Promise<TodoItem[]>{
         var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
+        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
+        let token = userData.token;
+        let root = userData.rootUrl;
         
         if(!token || !root){
             vscode.window.showErrorMessage("Please Configure the extension first!"); 
@@ -174,9 +175,9 @@ export class TeamworkProjectsApi{
      
        
         var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
+        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
+        let token = userData.token;
+        let root = userData.rootUrl;
 
 
         var item = context.globalState.get("twp.data.task." + id,"");
@@ -267,9 +268,9 @@ export class TeamworkProjectsApi{
 
     public async postTodoItem(context: vscode.ExtensionContext, id: number, tasklistid: number, title:string, description:string){
         var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
+        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
+        let token = userData.token;
+        let root = userData.rootUrl;
 
         const url = root + '/projects/' + id + "/tasks/quickadd.json";
 
@@ -302,7 +303,41 @@ export class TeamworkProjectsApi{
         return json;
     }
 
+    public async getLoginData(context: vscode.ExtensionContext, code: string): Promise<TeamworkAccount> {
+     
+       
+        var axios = require("axios");
+        var config = vscode.workspace.getConfiguration('twp');
 
+        let url = 'https://api.teamwork.com/launchpad/v1/token.json?code=' + code;
+
+        let data = {
+            code: code,
+        };
+
+        let json = await axios({
+            method:'post',
+            data: JSON.stringify(data),
+            url,
+        })
+        .catch(function (error) {
+            console.log(error);
+            return null;
+        });
+
+
+        let loginData = json["data"];
+
+        let user = new TeamworkAccount(
+            loginData.installation.id,
+            loginData.user.id,
+            loginData.user.firstName + " " + loginData.user.lastName,
+            loginData.user.email,
+            loginData["access_token"],
+            loginData.installation.apiEndPoint,);
+
+        return user;
+    }
 
 }
 

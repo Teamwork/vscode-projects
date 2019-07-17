@@ -16,6 +16,7 @@ import { TaskProvider } from './taskProvider';
 import { TeamworkProjectsApi } from './teamworkProjectsApi';
 import { EmptyNode } from './model/nodes/EmptyNode';
 import { WebViews } from './webviews';
+import { TeamworkAccount } from './model/teamworkAccount';
 
 
 export class TeamworkProjects{
@@ -277,9 +278,9 @@ export class TeamworkProjects{
 
     public async RefreshData(){
 
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
+        let userData : TeamworkAccount = this.context.globalState.get("twp.data.activeAccount");
+        let token = userData.token;
+        let root = userData.rootUrl;
         
         if(!token || !root){
             return; 
@@ -408,35 +409,18 @@ export class TeamworkProjects{
     }
 
     public async SelectAccount() : Promise<Boolean>{
-        this.loginPanel = vscode.window.createWebviewPanel("twp.TaskPreview","Teamwork Projects, Login",vscode.ViewColumn.Beside,{
-            enableScripts: true,
-            localResourceRoots: [
-                vscode.Uri.file(path.join(this._extensionPath, 'media'))
-            ]                
-          });
-          this.loginPanel.iconPath = {
-            light: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg')),
-            dark: vscode.Uri.file(path.join(this._extensionPath, 'resources', 'projects-white.svg'))
-          };
-
-
-
-          this.loginPanel.webview.html = this.WebViews.GetWebViewContentLoader();
-
-          this.loginPanel.webview.onDidReceiveMessage(
-              async message => {
-
-              }
-          );
-
-          this.panel.onDidDispose ( task=>{
-              this.dispose();
-          });
-
-
+        vscode.env.openExternal(vscode.Uri.parse('https://www.teamwork.com/launchpad/login?state=VSCODE&redirect_uri=vscode://teamwork.twp/loginData'));
         return true;
     }
 
+    public async FinishLogin(context: vscode.ExtensionContext, code: string) : Promise<TeamworkAccount>{
+        var api = new TeamworkProjectsApi;
+        var userData = await api.getLoginData(context,code);
+        console.log(JSON.stringify(userData));
+        context.globalState.update("twp.data.activeAccount", userData);
+        this.RefreshData();
+        return null;
+    }
     public async SelectProject() : Promise<ProjectConfig>{
         let savedConfig: ProjectConfig = await this.GetProjectForRepository();
 

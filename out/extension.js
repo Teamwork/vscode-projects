@@ -16,6 +16,19 @@ function activate(context) {
         const twp = new teamworkProjects_1.TeamworkProjects(context, context.extensionPath);
         const taskProvider = new taskProvider_1.TaskProvider(context, twp);
         vscode.window.registerTreeDataProvider('taskOutline', taskProvider);
+        // Register Url Handler for App
+        vscode.window.registerUriHandler({
+            handleUri(uri) {
+                if (uri.toString().indexOf("VSCODE") > 0) {
+                    vscode.window.showInformationMessage("Teamwork: finishing login, please wait a second");
+                    let code = uri.query.toString().replace("code=", "").replace("state=VSCODE", "");
+                    let account = twp.FinishLogin(context, code);
+                }
+                else {
+                    // Not yet implemented
+                }
+            }
+        });
         // Refresh Data on startup and setup status bar
         twp.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 0);
         twp.Config = yield twp.GetProjectForRepository();

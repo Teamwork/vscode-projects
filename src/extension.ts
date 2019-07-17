@@ -5,6 +5,8 @@ import { TaskProvider } from './taskProvider';
 import { TeamworkProjects } from './teamworkProjects';
 import { ProjectConfig } from './model/projectConfig';
 import { TaskItemNode } from './model/nodes/TaskItemNode';
+import { string } from 'prop-types';
+import { TeamworkProjectsApi } from './teamworkProjectsApi';
 
 
 
@@ -13,6 +15,19 @@ export async function activate(context: vscode.ExtensionContext) {
 	const twp = new TeamworkProjects(context,context.extensionPath);
 	const taskProvider = new TaskProvider(context,twp);
 	vscode.window.registerTreeDataProvider('taskOutline', taskProvider);
+
+	// Register Url Handler for App
+	vscode.window.registerUriHandler({
+        handleUri(uri: vscode.Uri) {
+			if(uri.toString().indexOf("VSCODE") > 0){
+				vscode.window.showInformationMessage("Teamwork: finishing login, please wait a second");
+				let code = uri.query.toString().replace("code=","").replace("state=VSCODE","");
+				let account = twp.FinishLogin(context,code);
+			}else{
+				// Not yet implemented
+			}
+        }
+    });
 
 	// Refresh Data on startup and setup status bar
 	twp.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 0);
@@ -47,6 +62,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('twp.RefreshData', task => {twp.RefreshData();});
 	vscode.commands.registerCommand('twp.linkTask', task => { twp.QuickAddTask();});
 	vscode.commands.registerCommand('twp.SetAccount',  task => {twp.SelectAccount();});
+
 
 
 	// Refresh data once every 30 minutes
