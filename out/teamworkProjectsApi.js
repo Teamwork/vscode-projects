@@ -12,6 +12,7 @@ const vscode = require("vscode");
 const utilities_1 = require("./utilities");
 const taskQuickAdd_1 = require("./model/taskQuickAdd");
 const teamworkAccount_1 = require("./model/teamworkAccount");
+const util_1 = require("util");
 class TeamworkProjectsApi {
     GetProjects(context, force = false, includePeople = false, getAll = false, getList = "") {
         return __awaiter(this, void 0, void 0, function* () {
@@ -51,8 +52,12 @@ class TeamworkProjectsApi {
                     element.people = yield this.GetPeopleInProject(context, force, element.id);
                 }));
             }
-            context.globalState.update("twp.data.project", result.data.projects);
-            context.globalState.update("twp.data.projects.lastUpdated", new Date());
+            if (!util_1.isNullOrUndefined(result.data)) {
+                context.globalState.update("twp.data.project", result.data.projects);
+            }
+            if (!util_1.isNullOrUndefined(result.data)) {
+                context.globalState.update("twp.data.projects.lastUpdated", new Date());
+            }
             return result.data.projects;
         });
     }

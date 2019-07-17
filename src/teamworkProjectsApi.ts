@@ -7,6 +7,7 @@ import { Project, ProjectListResponse} from './model/responses/projectListRespon
 import { Person, PeopleResponse} from './model/responses/peopleResponse';
 import { TaskQuickAdd, TodoItemQuick } from './model/taskQuickAdd';
 import { TeamworkAccount } from './model/teamworkAccount';
+import { isNullOrUndefined } from 'util';
 
 export class TeamworkProjectsApi{
 
@@ -52,8 +53,8 @@ export class TeamworkProjectsApi{
             });
         }
 
-        context.globalState.update("twp.data.project",result.data.projects);
-        context.globalState.update("twp.data.projects.lastUpdated", new Date() );
+       if(!isNullOrUndefined(result.data)){ context.globalState.update("twp.data.project",result.data.projects);}
+       if(!isNullOrUndefined(result.data)){  context.globalState.update("twp.data.projects.lastUpdated", new Date() );}
         return result.data.projects;
     }
 
