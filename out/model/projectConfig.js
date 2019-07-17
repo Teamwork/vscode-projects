@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const util_1 = require("util");
 class ProjectConfig {
     constructor(projects) {
         this.Projects = projects;
-        if (this.Projects === undefined) {
+        if (util_1.isNullOrUndefined(this.Projects)) {
             this.ActiveProjectName = "No Project Selected";
             this.ActiveProjectId = "0";
             return;

@@ -1,4 +1,5 @@
 import { Project } from "./responses/projectListResponse";
+import { isNullOrUndefined } from "util";
 
 export class ProjectConfig{
     public ActiveProjectName : string;
@@ -10,7 +11,7 @@ export class ProjectConfig{
         this.Projects = projects;
 
 
-        if(this.Projects === undefined){
+        if(isNullOrUndefined(this.Projects)){
             this.ActiveProjectName = "No Project Selected";
             this.ActiveProjectId = "0";   
             return;

@@ -320,9 +320,9 @@ class TeamworkProjects {
     GetProjectForRepository() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                var userConfig = vscode.workspace.getConfiguration('twp');
-                var token = userConfig.get("APIKey");
-                var root = userConfig.get("APIRoot");
+                let userData = this.context.globalState.get("twp.data.activeAccount");
+                let token = userData.token;
+                let root = userData.rootUrl;
                 if (!token || !root) {
                     return;
                 }

@@ -381,9 +381,9 @@ export class TeamworkProjects{
     public async GetProjectForRepository(): Promise<ProjectConfig>{
         try{
 
-            var userConfig = vscode.workspace.getConfiguration('twp');
-            var token = userConfig.get("APIKey");
-            var root = userConfig.get("APIRoot");
+            let userData : TeamworkAccount = this.context.globalState.get("twp.data.activeAccount");
+            let token = userData.token;
+            let root = userData.rootUrl;
             
             if(!token || !root){
                 return; 
