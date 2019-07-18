@@ -73,6 +73,7 @@ export interface TodoItem {
     userFollowingComments?:         boolean;
     userFollowingChanges?:          boolean;
     DLM?:                           number;
+    subTasks?:                      TodoItem[];
 }
 
 export interface BoardColumn {

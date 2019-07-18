@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const ProjectNode_1 = require("./model/nodes/ProjectNode");
 const ProjectErrorNode_1 = require("./model/nodes/ProjectErrorNode");
+const util_1 = require("util");
 class TaskProvider {
     constructor(context, twp) {
         this.context = context;
@@ -40,10 +41,10 @@ class TaskProvider {
                         return items;
                     }
                     if (!config) {
-                        var userConfig = vscode.workspace.getConfiguration('twp');
-                        var token = userConfig.get("APIKey");
-                        var root = userConfig.get("APIRoot");
-                        if (!token || !root) {
+                        let userData = this.twp._context.globalState.get("twp.data.activeAccount");
+                        let token = userData.token;
+                        let root = userData.rootUrl;
+                        if (util_1.isNullOrUndefined(token) || util_1.isNullOrUndefined(root)) {
                             items.push(new ProjectErrorNode_1.ProjectErrorNode("-> Please login first.", "", "", 0));
                             return items;
                         }

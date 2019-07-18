@@ -19,6 +19,7 @@ const utilities_1 = require("./utilities");
 const teamworkProjectsApi_1 = require("./teamworkProjectsApi");
 const EmptyNode_1 = require("./model/nodes/EmptyNode");
 const webviews_1 = require("./webviews");
+const util_1 = require("util");
 class TeamworkProjects {
     constructor(context, extensionPath) {
         this.context = context;
@@ -218,8 +219,8 @@ class TeamworkProjects {
                     taskDescription += "Selection: " + "\n";
                     taskDescription += text;
                     var newTask = yield this.API.postTodoItem(this._context, parseInt(this.Config.ActiveProjectId), parseInt(taskList.id), result, taskDescription);
-                    var config = vscode.workspace.getConfiguration('twp');
-                    var root = config.get("APIRoot");
+                    let userData = this._context.globalState.get("twp.data.activeAccount");
+                    let root = userData.rootUrl;
                     var id = newTask["data"]["taskIds"];
                     var taskDetails = yield this.API.getTodoItem(this._context, parseInt(id), true);
                     var langConfig = utilities_1.Utilities.GetActiveLanguageConfig();
@@ -362,6 +363,13 @@ class TeamworkProjects {
     }
     SelectProject() {
         return __awaiter(this, void 0, void 0, function* () {
+            let userData = this._context.globalState.get("twp.data.activeAccount");
+            let token = userData.token;
+            let root = userData.rootUrl;
+            if (util_1.isNullOrUndefined(token) || util_1.isNullOrUndefined(root)) {
+                this.SelectAccount();
+                return;
+            }
             let savedConfig = yield this.GetProjectForRepository();
             const projectItem = yield vscode.window.showQuickPick(this.GetProjectQuickTips(true, savedConfig.Projects), { placeHolder: "Select Projects", ignoreFocusOut: true, canPickMany: true });
             if (projectItem) {
@@ -426,7 +434,7 @@ class TeamworkProjects {
             let todoItems = yield this.API.getTaskItems(context, node.id, force);
             let nodeList = [];
             todoItems.forEach(element => {
-                nodeList.push(new TaskItemNode_1.TaskItemNode(element.content, element["responsible-party-summary"], "", element.id, element.priority, element.hasTickets, element.completed, element["responsible-party-ids"], node, "taskItem", provider, this));
+                nodeList.push(new TaskItemNode_1.TaskItemNode(element.content, element["responsible-party-summary"], "", element.id, element.priority, element.hasTickets, element.completed, !util_1.isNullOrUndefined(element.subTasks) && element.subTasks.length > 0, element["responsible-party-ids"], node, "taskItem", provider, this, element.subTasks));
             });
             if (todoItems.length === 0) {
                 nodeList.push(new EmptyNode_1.EmptyNode("No Tasks", 0));

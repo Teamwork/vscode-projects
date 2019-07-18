@@ -4,6 +4,8 @@ import { TeamworkProjects } from "../../teamworkProjects";
 import * as path from 'path';
 import { TaskListNode } from "./TaskListNode";
 import { TaskProvider } from "../../taskProvider";
+import { TodoItem } from "../responses/TaskItemResponse";
+import { isNullOrUndefined } from "util";
 
 export class TaskItemNode implements INode {
     constructor(
@@ -14,11 +16,13 @@ export class TaskItemNode implements INode {
         public priority: string,
         public hasDesk: boolean,
         public isComplete: boolean,
+        public hasChildren: boolean,
         public assignedTo: string,
-        public parentNode: TaskListNode,
+        public parentNode: TaskListNode | TaskItemNode,
         public contextValue: string,
         private readonly provider: TaskProvider, 
-        private readonly twp: TeamworkProjects) {
+        private readonly twp: TeamworkProjects,
+        public subTasks?: TodoItem[],) {
     }
 
     public getTreeItem(): vscode.TreeItem {
@@ -26,7 +30,7 @@ export class TaskItemNode implements INode {
             label: this.label,
             description: this.description,
             iconPath: this.getIcon(this.priority,this.hasDesk, this.isComplete),
-            collapsibleState: vscode.TreeItemCollapsibleState.None,        
+            collapsibleState: this.hasChildren ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,        
             contextValue: this.contextValue,
             command: {
                 command: "taskOutline.showElement",
@@ -36,8 +40,35 @@ export class TaskItemNode implements INode {
         };
     }
 
-    public getChildren(): INode[] {
-            return  [];
+    public async getChildren(): Promise<INode[]> {
+        try {
+            if(isNullOrUndefined(this.subTasks)){
+                return [];
+            }else{
+                let nodeList: INode[] = []; 
+    
+                this.subTasks.forEach(element => {
+                    nodeList.push(new TaskItemNode(element.content,
+                        element["responsible-party-summary"],"", 
+                        element.id,
+                        element.priority,
+                        element.hasTickets,
+                        element.completed,
+                        !isNullOrUndefined(element.subTasks) && element.subTasks.length > 0,
+                        element["responsible-party-ids"],
+                        this,
+                        "taskItem",
+                        this.provider,
+                        this.twp));
+                });
+                return nodeList;
+            }
+          } catch (error) {
+              vscode.window.showErrorMessage(error);
+              return [];
+        }
+
+
     }
 
     public getIcon(priority: string, hasDesk: boolean = false, isComplete: boolean = false) {

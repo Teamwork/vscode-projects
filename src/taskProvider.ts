@@ -3,6 +3,8 @@ import {INode} from './model/nodes/INode';
 import { TeamworkProjects } from './teamworkProjects';
 import { ProjectNode } from './model/nodes/ProjectNode';
 import { ProjectErrorNode } from './model/nodes/ProjectErrorNode';
+import { isNullOrUndefined } from 'util';
+import { TeamworkAccount } from './model/teamworkAccount';
 
 
 export class TaskProvider implements vscode.TreeDataProvider<INode> {
@@ -42,11 +44,11 @@ export class TaskProvider implements vscode.TreeDataProvider<INode> {
                 }
                 if(!config){
 
-                    var userConfig = vscode.workspace.getConfiguration('twp');
-                    var token = userConfig.get("APIKey");
-                    var root = userConfig.get("APIRoot");
+                    let userData : TeamworkAccount = this.twp._context.globalState.get("twp.data.activeAccount");
+                    let token = userData.token;
+                    let root = userData.rootUrl;
                     
-                    if(!token || !root){
+                    if(isNullOrUndefined(token) ||isNullOrUndefined(root)){
                         items.push(new ProjectErrorNode("-> Please login first.","","",0));
                         return items; 
                     }else{

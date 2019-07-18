@@ -5,8 +5,6 @@ import { TaskProvider } from './taskProvider';
 import { TeamworkProjects } from './teamworkProjects';
 import { ProjectConfig } from './model/projectConfig';
 import { TaskItemNode } from './model/nodes/TaskItemNode';
-import { string } from 'prop-types';
-import { TeamworkProjectsApi } from './teamworkProjectsApi';
 
 
 

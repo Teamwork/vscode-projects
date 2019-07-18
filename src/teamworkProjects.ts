@@ -17,6 +17,7 @@ import { TeamworkProjectsApi } from './teamworkProjectsApi';
 import { EmptyNode } from './model/nodes/EmptyNode';
 import { WebViews } from './webviews';
 import { TeamworkAccount } from './model/teamworkAccount';
+import { isNullOrUndefined } from 'util';
 
 
 export class TeamworkProjects{
@@ -253,8 +254,9 @@ export class TeamworkProjects{
 
                 var newTask = await this.API.postTodoItem(this._context,parseInt(this.Config.ActiveProjectId),parseInt(taskList.id),result,taskDescription);
 
-                var config = vscode.workspace.getConfiguration('twp');
-                var root = config.get("APIRoot");
+                let userData : TeamworkAccount = this._context.globalState.get("twp.data.activeAccount");
+                let root = userData.rootUrl;
+
                 var id = newTask["data"]["taskIds"];
                 var taskDetails = await this.API.getTodoItem(this._context,parseInt(id),true);
 
@@ -422,6 +424,17 @@ export class TeamworkProjects{
         return null;
     }
     public async SelectProject() : Promise<ProjectConfig>{
+
+        let userData : TeamworkAccount = this._context.globalState.get("twp.data.activeAccount");
+        let token = userData.token;
+        let root = userData.rootUrl;
+
+        if(isNullOrUndefined(token) || isNullOrUndefined(root)){
+            this.SelectAccount();
+            return;
+        }
+
+
         let savedConfig: ProjectConfig = await this.GetProjectForRepository();
 
         const projectItem = await vscode.window.showQuickPick(
@@ -513,11 +526,13 @@ export class TeamworkProjects{
                 element.priority,
                 element.hasTickets,
                 element.completed,
+                !isNullOrUndefined(element.subTasks) && element.subTasks.length > 0,
                 element["responsible-party-ids"],
                 node,
                 "taskItem",
                 provider,
-                this));
+                this,
+                element.subTasks));
         });
 
 
