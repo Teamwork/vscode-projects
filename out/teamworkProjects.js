@@ -27,7 +27,7 @@ class TeamworkProjects {
         this._disposables = [];
         this._context = context;
         this._extensionPath = extensionPath;
-        this.API = new teamworkProjectsApi_1.TeamworkProjectsApi();
+        this.API = new teamworkProjectsApi_1.TeamworkProjectsApi(this._context);
         this.WebViews = new webviews_1.WebViews(this._context, this._extensionPath);
     }
     dispose() {
@@ -120,27 +120,7 @@ class TeamworkProjects {
     }
     CompleteTask(taskItem) {
         return __awaiter(this, void 0, void 0, function* () {
-            var axios = require("axios");
-            var config = vscode.workspace.getConfiguration('twp');
-            var token = config.get("APIKey");
-            var root = config.get("APIRoot");
-            if (!token || !root) {
-                vscode.window.showErrorMessage("Please Configure the extension first!");
-                return;
-            }
-            const url = root + '/tasks/' + taskItem + '/complete.json';
-            let json = yield axios({
-                method: 'put',
-                url: url,
-                data: "",
-                auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-                }
-            })
-                .catch(function (error) {
-                console.log(error);
-            });
+            yield this.API.CompleteTask(taskItem);
             this.panel.webview.html = yield this.GetWebViewContent(taskItem, true);
         });
     }
@@ -353,7 +333,7 @@ class TeamworkProjects {
     }
     FinishLogin(context, code) {
         return __awaiter(this, void 0, void 0, function* () {
-            var api = new teamworkProjectsApi_1.TeamworkProjectsApi;
+            var api = new teamworkProjectsApi_1.TeamworkProjectsApi(this._context);
             var userData = yield api.getLoginData(context, code);
             console.log(JSON.stringify(userData));
             context.globalState.update("twp.data.activeAccount", userData);

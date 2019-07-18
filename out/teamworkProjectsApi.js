@@ -14,14 +14,24 @@ const taskQuickAdd_1 = require("./model/taskQuickAdd");
 const teamworkAccount_1 = require("./model/teamworkAccount");
 const util_1 = require("util");
 class TeamworkProjectsApi {
-    //todo -> add constructor with account
+    constructor(context) {
+        this.axios = require("axios");
+        let userData = context.globalState.get("twp.data.activeAccount");
+        let token = userData.token;
+        this.root = userData.rootUrl;
+        if (!token || !this.root) {
+            this.isConfigured = false;
+            vscode.window.showErrorMessage("Please Configure the extension first!");
+            return;
+        }
+        this.axios.defaults.headers.common = {
+            'User-Agent': `tw-vscode (${process.platform} | ${vscode.extensions.getExtension('teamwork.twp').packageJSON.version})`,
+            'Authorization': `Bearer ${token}`
+        };
+    }
     GetProjects(context, force = false, includePeople = false, getAll = false, getList = "") {
         return __awaiter(this, void 0, void 0, function* () {
-            var axios = require("axios");
-            let userData = context.globalState.get("twp.data.activeAccount");
-            let token = userData.token;
-            let root = userData.rootUrl;
-            if (!token || !root) {
+            if (!this.isConfigured) {
                 vscode.window.showErrorMessage("Please Configure the extension first!");
                 return;
             }
@@ -35,9 +45,8 @@ class TeamworkProjectsApi {
                 }
             }
             if (!result) {
-                const url = root + '/tasks/projects.json?type=canAddItem&pageSize=200';
-                axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` };
-                result = yield axios({
+                const url = this.root + '/tasks/projects.json?type=canAddItem&pageSize=200';
+                result = yield this.axios({
                     method: 'get',
                     url,
                 })
@@ -61,17 +70,12 @@ class TeamworkProjectsApi {
     }
     GetPeopleInProject(context, force = false, id) {
         return __awaiter(this, void 0, void 0, function* () {
-            var axios = require("axios");
-            let userData = context.globalState.get("twp.data.activeAccount");
-            let token = userData.token;
-            let root = userData.rootUrl;
-            if (!token || !root) {
+            if (!this.isConfigured) {
                 vscode.window.showErrorMessage("Please Configure the extension first!");
                 return;
             }
-            var url = root + '/projects/' + id + "/people.json";
-            axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` };
-            let json = yield axios({
+            var url = this.root + '/projects/' + id + "/people.json";
+            let json = yield this.axios({
                 method: 'get',
                 url
             })
@@ -83,11 +87,7 @@ class TeamworkProjectsApi {
     }
     getTaskLists(context, id = 0, force = false) {
         return __awaiter(this, void 0, void 0, function* () {
-            var axios = require("axios");
-            let userData = context.globalState.get("twp.data.activeAccount");
-            let token = userData.token;
-            let root = userData.rootUrl;
-            if (util_1.isNullOrUndefined(token) || util_1.isNullOrUndefined(root)) {
+            if (!this.isConfigured) {
                 vscode.window.showErrorMessage("Please Configure the extension first!");
                 return;
             }
@@ -101,9 +101,8 @@ class TeamworkProjectsApi {
                     return cachedNodes["data"]["tasklists"];
                 }
             }
-            const url = root + '/projects/api/v1/projects/' + id + '/tasklists.json?page=1&pageSize=100';
-            axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` };
-            response = yield axios({
+            const url = this.root + '/projects/api/v1/projects/' + id + '/tasklists.json?page=1&pageSize=100';
+            response = yield this.axios({
                 method: 'get',
                 url
             })
@@ -117,11 +116,7 @@ class TeamworkProjectsApi {
     }
     getTaskItems(context, id = 0, force = false) {
         return __awaiter(this, void 0, void 0, function* () {
-            var axios = require("axios");
-            let userData = context.globalState.get("twp.data.activeAccount");
-            let token = userData.token;
-            let root = userData.rootUrl;
-            if (!token || !root) {
+            if (!this.isConfigured) {
                 vscode.window.showErrorMessage("Please Configure the extension first!");
                 return;
             }
@@ -135,9 +130,8 @@ class TeamworkProjectsApi {
                     return todoItems;
                 }
             }
-            const url = root + '/tasklists/' + id + '/tasks.json?nestSubTasks=true';
-            axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` };
-            todoResponse = yield axios({
+            const url = this.root + '/tasklists/' + id + '/tasks.json?nestSubTasks=true';
+            todoResponse = yield this.axios({
                 method: 'get',
                 url,
             })
@@ -152,10 +146,10 @@ class TeamworkProjectsApi {
     }
     getTodoItem(context, id, force = false) {
         return __awaiter(this, void 0, void 0, function* () {
-            var axios = require("axios");
-            let userData = context.globalState.get("twp.data.activeAccount");
-            let token = userData.token;
-            let root = userData.rootUrl;
+            if (!this.isConfigured) {
+                vscode.window.showErrorMessage("Please Configure the extension first!");
+                return;
+            }
             var item = context.globalState.get("twp.data.task." + id, "");
             var lastUpdated = context.globalState.get("twp.data.task." + id + ".lastUpdated", new Date());
             var todo;
@@ -165,14 +159,10 @@ class TeamworkProjectsApi {
                 }
             }
             else {
-                const url = root + '/tasks/' + id + '.json';
-                let json = yield axios({
+                const url = this.root + '/tasks/' + id + '.json';
+                let json = yield this.axios({
                     method: 'get',
-                    url,
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        "Content-Type": "application/json",
-                    },
+                    url
                 })
                     .catch(function (error) {
                     console.log(error);
@@ -187,12 +177,11 @@ class TeamworkProjectsApi {
             todo['content'] = todo['content'].replace('\'', '´');
             // If task has comments -> Load them
             if (todo["comments-count"] > 0) {
-                const commenturl = root + '/tasks/' + id + '/comments.json';
-                let comments = yield axios({
+                const commenturl = this.root + '/tasks/' + id + '/comments.json';
+                let comments = yield this.axios({
                     method: 'get',
                     url: commenturl,
                     headers: {
-                        'Authorization': 'Bearer ' + token,
                         "Content-Type": "application/json",
                     },
                 })
@@ -210,12 +199,11 @@ class TeamworkProjectsApi {
                 todo["comments"] = comments.data.comments;
             }
             if (todo["attachments-count"] > 0) {
-                const attachment = root + '/v/2/tasks/' + id + '/files.json?getCategoryPath=true&getLikes=true&getVersions=true&page=1&pageSize=50';
-                let comments = yield axios({
+                const attachment = this.root + '/v/2/tasks/' + id + '/files.json?getCategoryPath=true&getLikes=true&getVersions=true&page=1&pageSize=50';
+                let comments = yield this.axios({
                     method: 'get',
                     url: attachment,
                     headers: {
-                        'Authorization': 'Bearer ' + token,
                         "Content-Type": "application/json",
                     },
                 })
@@ -224,8 +212,8 @@ class TeamworkProjectsApi {
                 });
                 todo["attachments"] = comments.data.files;
             }
-            todo["rooturl"] = root;
-            todo.rooturl = root;
+            todo["rooturl"] = this.root;
+            todo.rooturl = this.root;
             context.globalState.update("twp.data.task." + id + ".lastUpdated", Date.now());
             context.globalState.update("twp.data.task." + id, todo);
             return todo;
@@ -233,11 +221,11 @@ class TeamworkProjectsApi {
     }
     postTodoItem(context, id, tasklistid, title, description) {
         return __awaiter(this, void 0, void 0, function* () {
-            var axios = require("axios");
-            let userData = context.globalState.get("twp.data.activeAccount");
-            let token = userData.token;
-            let root = userData.rootUrl;
-            const url = root + '/projects/' + id + "/tasks/quickadd.json";
+            if (!this.isConfigured) {
+                vscode.window.showErrorMessage("Please Configure the extension first!");
+                return;
+            }
+            const url = this.root + '/projects/' + id + "/tasks/quickadd.json";
             var task = new taskQuickAdd_1.TaskQuickAdd();
             task.tasklistId = tasklistid;
             task.notify = false;
@@ -246,12 +234,11 @@ class TeamworkProjectsApi {
             var todoDetails = new taskQuickAdd_1.TodoItemQuick();
             todoDetails.description = description;
             task["todo-item"] = todoDetails;
-            let json = yield axios({
+            let json = yield this.axios({
                 method: 'post',
                 data: task,
                 url: url,
                 headers: {
-                    'Authorization': 'Bearer ' + token,
                     "Content-Type": "application/json",
                 },
             })
@@ -261,15 +248,34 @@ class TeamworkProjectsApi {
             return json;
         });
     }
+    CompleteTask(taskItem) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.isConfigured) {
+                vscode.window.showErrorMessage("Please Configure the extension first!");
+                return;
+            }
+            const url = this.root + '/tasks/' + taskItem + '/complete.json';
+            let json = yield this.axios({
+                method: 'put',
+                url: url,
+                data: ""
+            })
+                .catch(function (error) {
+                console.log(error);
+                return false;
+            });
+            return true;
+        });
+    }
     getLoginData(context, code) {
         return __awaiter(this, void 0, void 0, function* () {
-            var axios = require("axios");
+            var loginaxios = require("axios");
             var config = vscode.workspace.getConfiguration('twp');
             let url = 'https://api.teamwork.com/launchpad/v1/token.json?code=' + code;
             let data = {
                 code: code,
             };
-            let json = yield axios({
+            let json = yield loginaxios({
                 method: 'post',
                 data: JSON.stringify(data),
                 url,

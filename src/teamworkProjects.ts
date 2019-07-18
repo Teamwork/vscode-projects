@@ -35,8 +35,8 @@ export class TeamworkProjects{
     constructor(private context: vscode.ExtensionContext,extensionPath: string) {
         this._context = context;
         this._extensionPath = extensionPath;
-        this.API = new TeamworkProjectsApi();
-        this.WebViews = new WebViews(this._context, this._extensionPath)
+        this.API = new TeamworkProjectsApi(this._context);
+        this.WebViews = new WebViews(this._context, this._extensionPath);
     }
     private _disposables: vscode.Disposable[] = [];
 	public dispose() {
@@ -139,33 +139,9 @@ export class TeamworkProjects{
     }
 
     public async CompleteTask(taskItem: number){
-
-        var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
         
-        if(!token || !root){
-            vscode.window.showErrorMessage("Please Configure the extension first!"); 
-            return; 
-        }
-        const url = root + '/tasks/' + taskItem + '/complete.json';
-
-
-        let json = await axios({
-            method: 'put',
-            url: url,
-            data: "",
-            auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-            }
-          })
-        .catch(function (error) {
-            console.log(error);
-        });
-
-         this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
+        await this.API.CompleteTask(taskItem);
+        this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
 
     }
 
@@ -416,7 +392,7 @@ export class TeamworkProjects{
     }
 
     public async FinishLogin(context: vscode.ExtensionContext, code: string) : Promise<TeamworkAccount>{
-        var api = new TeamworkProjectsApi;
+        var api = new TeamworkProjectsApi(this._context);
         var userData = await api.getLoginData(context,code);
         console.log(JSON.stringify(userData));
         context.globalState.update("twp.data.activeAccount", userData);

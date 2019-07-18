@@ -13,7 +13,7 @@ export class WebViews{
     constructor(private context: vscode.ExtensionContext,extensionPath: string) {
         this._context = context;
         this._extensionPath = extensionPath;
-        this.API = new TeamworkProjectsApi();
+        this.API = new TeamworkProjectsApi(this._context);
     }
 
     public GetWebViewContentLoader(){
