@@ -142,7 +142,7 @@
                                 {
                                     "type": "TextBlock",
                                     "spacing": "None",
-                                    "text": "{datetime}",
+                                    "text": "{$data['datetime']}",
                                     "isSubtle": true,
                                     "wrap": true,
                                     "size": "Small",

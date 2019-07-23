@@ -28,6 +28,7 @@ class TeamworkProjectsApi {
             'User-Agent': `tw-vscode (${process.platform} | ${vscode.extensions.getExtension('teamwork.twp').packageJSON.version})`,
             'Authorization': `Bearer ${token}`
         };
+        this.isConfigured = true;
     }
     GetProjects(context, force = false, includePeople = false, getAll = false, getList = "") {
         return __awaiter(this, void 0, void 0, function* () {
@@ -194,7 +195,7 @@ class TeamworkProjectsApi {
                     var newBody = turndownService.turndown(element['html-body']);
                     newBody = newBody.replace('\'', '´');
                     element.body = newBody;
-                    element["datetime"] = dateFormat(Date.parse(todo.datetime), "ddd-mm-yyyy hh:MM");
+                    element["datewritten"] = dateFormat(Date.parse(element.datetime), "ddd-mm-yyyy hh:MM");
                 });
                 todo["comments"] = comments.data.comments;
             }
@@ -261,6 +262,35 @@ class TeamworkProjectsApi {
                 data: ""
             })
                 .catch(function (error) {
+                console.log(error);
+                return false;
+            });
+            return true;
+        });
+    }
+    AddComment(taskItem, content) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.isConfigured) {
+                vscode.window.showErrorMessage("Please Configure the extension first!");
+                return;
+            }
+            const url = this.root + '/tasks/' + taskItem + '/comments.json';
+            var comment = {
+                "comment": {
+                    "body": "" + content + "",
+                    "notify": "false",
+                    "isPrivate": false,
+                    "content-type": "text",
+                    "ParseMentions": true,
+                }
+            };
+            let json = yield this.axios({
+                method: 'post',
+                url: url,
+                data: comment
+            })
+                .catch(function (error) {
+                console.log(comment);
                 console.log(error);
                 return false;
             });

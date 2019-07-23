@@ -6,6 +6,7 @@ import { TaskListNode } from "./TaskListNode";
 import { TaskProvider } from "../../taskProvider";
 import { TodoItem } from "../responses/TaskItemResponse";
 import { isNullOrUndefined } from "util";
+import { TeamworkAccount } from "../teamworkAccount";
 
 export class TaskItemNode implements INode {
     constructor(
@@ -47,9 +48,21 @@ export class TaskItemNode implements INode {
             }else{
                 let nodeList: INode[] = []; 
     
-                this.subTasks.forEach(element => {
+                var config = vscode.workspace.getConfiguration('twp');
+                var onlySelf = config.get("OnlySelfAssigned");
+                let userData : TeamworkAccount = this.twp._context.globalState.get("twp.data.activeAccount");
+                let userId = userData.userId;
+                var showUnassigned = config.get("showUnAssigned");
+                for(let i = 0; i < this.subTasks.length; i++){
+                    let element = this.subTasks[i];
+                    if(!isNullOrUndefined(element["responsible-party-ids"]) && element["responsible-party-ids"].indexOf(userId.toString()) < 0 && onlySelf){
+                        continue;  
+                    }
+                    if(isNullOrUndefined(element["responsible-party-ids"]) && !showUnassigned){
+                        continue;
+                    }
                     nodeList.push(new TaskItemNode(element.content,
-                        element["responsible-party-summary"],"", 
+                        isNullOrUndefined(element["responsible-party-summary"]) ? "Anyone" : element["responsible-party-summary"],"", 
                         element.id,
                         element.priority,
                         element.hasTickets,
@@ -60,7 +73,7 @@ export class TaskItemNode implements INode {
                         "taskItem",
                         this.provider,
                         this.twp));
-                });
+                }
                 return nodeList;
             }
           } catch (error) {

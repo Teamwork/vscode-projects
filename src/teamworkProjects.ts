@@ -98,50 +98,19 @@ export class TeamworkProjects{
 	}
 
     public async CreateComment(taskItem: number, content: string){
-
-        var axios = require("axios");
-        var config = vscode.workspace.getConfiguration('twp');
-        var token = config.get("APIKey");
-        var root = config.get("APIRoot");
-        
-        if(!token || !root){
-            vscode.window.showErrorMessage("Please Configure the extension first!"); 
-            return; 
-        }
-        const url = root + '/tasks/' + taskItem + '/comments.json';
-
-        var comment = {                
-            "comment": {
-                "body": "" + content + "",
-                "notify": "false",
-                "isPrivate": false,
-                "content-type":"text",
-                "ParseMentions": true,
-            }};
-
-        let json = await axios({
-            method: 'post',
-            url: url,
-            data: comment,
-            auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-            }
-          })
-        .catch(function (error) {
-            console.log(comment);
-            console.log(error);
-        });
-
+         await this.API.AddComment(taskItem, content);
          this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
-         
-
     }
 
     public async CompleteTask(taskItem: number){
         
         await this.API.CompleteTask(taskItem);
-        this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
+        if(isNullOrUndefined(this.panel) || isNullOrUndefined(this.panel.webview)){
+
+        }else{
+            this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
+        }
+
 
     }
 
@@ -233,23 +202,25 @@ export class TeamworkProjects{
                 let userData : TeamworkAccount = this._context.globalState.get("twp.data.activeAccount");
                 let root = userData.rootUrl;
 
-                var id = newTask["data"]["taskIds"];
-                var taskDetails = await this.API.getTodoItem(this._context,parseInt(id),true);
+                if(!isNullOrUndefined(newTask)){
+                    var id = newTask["data"]["taskIds"];
+                    var taskDetails = await this.API.getTodoItem(this._context,parseInt(id),true);
 
-                var langConfig = Utilities.GetActiveLanguageConfig();
-                var commentWrapper = langConfig.comments.lineComment;
-                var content = taskDetails.content;
-                var responsible = taskDetails["responsible-party-names"];
+                    var langConfig = Utilities.GetActiveLanguageConfig();
+                    var commentWrapper = langConfig.comments.lineComment;
+                    var content = taskDetails.content;
+                    var responsible = taskDetails["responsible-party-names"];
 
 
-                 editor.edit(edit => {
-                    edit.setEndOfLine(vscode.EndOfLine.CRLF);
-                    edit.insert(new vscode.Position(line, cursor), commentWrapper + "Task: " + content + "\r\n");
-                    edit.insert(new vscode.Position(line, cursor), commentWrapper + "Link: " + root + "/tasks/" + id + "\r\n");
-                    edit.insert(new vscode.Position(line, cursor), commentWrapper + "Assigned To: " + responsible + "\r\n"+ "\r\n");
-                });
-                
-                vscode.window.showInformationMessage("Task was added");
+                    editor.edit(edit => {
+                        edit.setEndOfLine(vscode.EndOfLine.CRLF);
+                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Task: " + content + "\r\n");
+                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Link: " + root + "/tasks/" + id + "\r\n");
+                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Assigned To: " + responsible + "\r\n"+ "\r\n");
+                    });
+                    
+                    vscode.window.showInformationMessage("Task was added");
+                }
             }
         }
     }
@@ -327,6 +298,10 @@ export class TeamworkProjects{
             this.Config = await this.GetProjectForRepository();
         }  
 
+
+        if (this.Config.ActiveProjectId === ""){
+            this.SelectActiveProject();
+        }
 
         this.Config.Projects.forEach(element => {
             if(element.Id.toString() === this.Config.ActiveProjectId){
@@ -423,15 +398,14 @@ export class TeamworkProjects{
             projectItem.forEach(async element =>{
                 items.push(new ProjectConfigEntry(element.label,element.id,element));
             });
-            var config = new ProjectConfig(items);
+            this.Config = new ProjectConfig(items);
             var path = vscode.workspace.rootPath + "/twp.json";
-            let data = JSON.stringify(config);  
+            let data = JSON.stringify(this.Config);  
             fs.writeFileSync(path, data);
-
             
             this.RefreshData();
             vscode.commands.executeCommand("taskOutline.refresh");  
-            return config;
+            return this.Config;
         }
     }
 
@@ -462,6 +436,8 @@ export class TeamworkProjects{
             fs.writeFileSync(path, data);
 
 
+            this.Config.ActiveProjectId = projectItem.id;
+            this.Config.ActiveProjectName = projectItem.name;
             return savedConfig;
         }
     }
@@ -495,9 +471,22 @@ export class TeamworkProjects{
         let todoItems = await this.API.getTaskItems(context, node.id, force);
         let nodeList: INode[] = []; 
 
-        todoItems.forEach(element => {
+        var config = vscode.workspace.getConfiguration('twp');
+        var onlySelf = config.get("OnlySelfAssigned");
+        var showUnassigned = config.get("showUnAssigned");
+        let userData : TeamworkAccount = this._context.globalState.get("twp.data.activeAccount");
+        let userId = userData.userId;
+
+        for(let i = 0; i < todoItems.length; i++){
+            let element = todoItems[i];
+            if(!isNullOrUndefined(element["responsible-party-ids"]) && element["responsible-party-ids"].indexOf(userId.toString()) < 0 && onlySelf){
+                continue;  
+            }
+            if(isNullOrUndefined(element["responsible-party-ids"]) && !showUnassigned){
+                continue;
+            }
             nodeList.push(new TaskItemNode(element.content,
-                element["responsible-party-summary"],"", 
+                isNullOrUndefined(element["responsible-party-summary"]) ? "Anyone" : element["responsible-party-summary"],"", 
                 element.id,
                 element.priority,
                 element.hasTickets,
@@ -509,8 +498,7 @@ export class TeamworkProjects{
                 provider,
                 this,
                 element.subTasks));
-        });
-
+        }
 
         if(todoItems.length === 0){
             nodeList.push(new EmptyNode("No Tasks",0));  

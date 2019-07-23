@@ -25,7 +25,7 @@
 			"url": "https://twitter.com/Teamwork"
 		}
 	],
-	"version": "0.6.0",
+	"version": "1.0.0",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
@@ -44,13 +44,15 @@
 				"type": "object",
 				"title": "Teamwork Projects Configuration",
 				"properties": {
-					"twp.APIKey": {
-						"type": "string",
-						"description": "Teamwork Projects API Key"
+					"twp.OnlySelfAssigned": {
+						"default": false,
+						"type": "boolean",
+						"description": "Only show tasks assigned to you."
 					},
-					"twp.APIRoot": {
-						"type": "string",
-						"description": "Teamwork Projects Installation root eg: https://xxx.teamwork.com"
+					"twp.showUnAssigned": {
+						"default": true,
+						"type": "boolean",
+						"description": "Show tasks not assigned to anyone"
 					},
 					"twp.ShowTeamworkPanel": {
 						"default": false,
@@ -106,8 +108,8 @@
 				"command": "twp.SetAccount",
 				"title": "Account",
 				"icon": {
-					"light": "resources/projects-white.svg",
-					"dark": "resources/projects-white.svg"
+					"light": "resources/light/user.svg",
+					"dark": "resources/dark/user.svg"
 				}
 			},
 			{
@@ -200,9 +202,6 @@
 		"@types/rimraf": "^2.0.2"
 	},
 	"dependencies": {
-		"@types/react": "^16.8.23",
-		"adaptivecards": "^1.2.0",
-		"adaptivecards-fabric": "^1.0.3",
 		"axios": "^0.18.1",
 		"cryptiles": ">=4.1.2",
 		"dateformat": "^3.0.3",
@@ -211,7 +210,7 @@
 		"jsonc-parser": "^0.4.2",
 		"mkdirp": "^0.5.1",
 		"moment": "^2.24.0",
-		"request": "^2.81.0",
+		"request": "^2.88.0",
 		"rimraf": "^2.6.2",
 		"turndown": "^5.0.3",
 		"vsce": "^1.59.0"

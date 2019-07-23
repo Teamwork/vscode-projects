@@ -84,44 +84,18 @@ class TeamworkProjects {
     }
     CreateComment(taskItem, content) {
         return __awaiter(this, void 0, void 0, function* () {
-            var axios = require("axios");
-            var config = vscode.workspace.getConfiguration('twp');
-            var token = config.get("APIKey");
-            var root = config.get("APIRoot");
-            if (!token || !root) {
-                vscode.window.showErrorMessage("Please Configure the extension first!");
-                return;
-            }
-            const url = root + '/tasks/' + taskItem + '/comments.json';
-            var comment = {
-                "comment": {
-                    "body": "" + content + "",
-                    "notify": "false",
-                    "isPrivate": false,
-                    "content-type": "text",
-                    "ParseMentions": true,
-                }
-            };
-            let json = yield axios({
-                method: 'post',
-                url: url,
-                data: comment,
-                auth: {
-                    username: token,
-                    password: 'xxxxxxxxxxxxx'
-                }
-            })
-                .catch(function (error) {
-                console.log(comment);
-                console.log(error);
-            });
+            yield this.API.AddComment(taskItem, content);
             this.panel.webview.html = yield this.GetWebViewContent(taskItem, true);
         });
     }
     CompleteTask(taskItem) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.API.CompleteTask(taskItem);
-            this.panel.webview.html = yield this.GetWebViewContent(taskItem, true);
+            if (util_1.isNullOrUndefined(this.panel) || util_1.isNullOrUndefined(this.panel.webview)) {
+            }
+            else {
+                this.panel.webview.html = yield this.GetWebViewContent(taskItem, true);
+            }
         });
     }
     GetPeopleQuickTips(people, assignedTo) {
@@ -201,19 +175,21 @@ class TeamworkProjects {
                     var newTask = yield this.API.postTodoItem(this._context, parseInt(this.Config.ActiveProjectId), parseInt(taskList.id), result, taskDescription);
                     let userData = this._context.globalState.get("twp.data.activeAccount");
                     let root = userData.rootUrl;
-                    var id = newTask["data"]["taskIds"];
-                    var taskDetails = yield this.API.getTodoItem(this._context, parseInt(id), true);
-                    var langConfig = utilities_1.Utilities.GetActiveLanguageConfig();
-                    var commentWrapper = langConfig.comments.lineComment;
-                    var content = taskDetails.content;
-                    var responsible = taskDetails["responsible-party-names"];
-                    editor.edit(edit => {
-                        edit.setEndOfLine(vscode.EndOfLine.CRLF);
-                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Task: " + content + "\r\n");
-                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Link: " + root + "/tasks/" + id + "\r\n");
-                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Assigned To: " + responsible + "\r\n" + "\r\n");
-                    });
-                    vscode.window.showInformationMessage("Task was added");
+                    if (!util_1.isNullOrUndefined(newTask)) {
+                        var id = newTask["data"]["taskIds"];
+                        var taskDetails = yield this.API.getTodoItem(this._context, parseInt(id), true);
+                        var langConfig = utilities_1.Utilities.GetActiveLanguageConfig();
+                        var commentWrapper = langConfig.comments.lineComment;
+                        var content = taskDetails.content;
+                        var responsible = taskDetails["responsible-party-names"];
+                        editor.edit(edit => {
+                            edit.setEndOfLine(vscode.EndOfLine.CRLF);
+                            edit.insert(new vscode.Position(line, cursor), commentWrapper + "Task: " + content + "\r\n");
+                            edit.insert(new vscode.Position(line, cursor), commentWrapper + "Link: " + root + "/tasks/" + id + "\r\n");
+                            edit.insert(new vscode.Position(line, cursor), commentWrapper + "Assigned To: " + responsible + "\r\n" + "\r\n");
+                        });
+                        vscode.window.showInformationMessage("Task was added");
+                    }
                 }
             }
         });
@@ -273,6 +249,9 @@ class TeamworkProjects {
             let nodeList = [];
             if (this.Config === null) {
                 this.Config = yield this.GetProjectForRepository();
+            }
+            if (this.Config.ActiveProjectId === "") {
+                this.SelectActiveProject();
             }
             this.Config.Projects.forEach(element => {
                 if (element.Id.toString() === this.Config.ActiveProjectId) {
@@ -357,13 +336,13 @@ class TeamworkProjects {
                 projectItem.forEach((element) => __awaiter(this, void 0, void 0, function* () {
                     items.push(new projectConfig_1.ProjectConfigEntry(element.label, element.id, element));
                 }));
-                var config = new projectConfig_1.ProjectConfig(items);
+                this.Config = new projectConfig_1.ProjectConfig(items);
                 var path = vscode.workspace.rootPath + "/twp.json";
-                let data = JSON.stringify(config);
+                let data = JSON.stringify(this.Config);
                 fs.writeFileSync(path, data);
                 this.RefreshData();
                 vscode.commands.executeCommand("taskOutline.refresh");
-                return config;
+                return this.Config;
             }
         });
     }
@@ -387,6 +366,8 @@ class TeamworkProjects {
                 var path = vscode.workspace.rootPath + "/twp.json";
                 let data = JSON.stringify(savedConfig);
                 fs.writeFileSync(path, data);
+                this.Config.ActiveProjectId = projectItem.id;
+                this.Config.ActiveProjectName = projectItem.name;
                 return savedConfig;
             }
         });
@@ -413,9 +394,21 @@ class TeamworkProjects {
             this.statusBarItem.text = "Loading tasks......";
             let todoItems = yield this.API.getTaskItems(context, node.id, force);
             let nodeList = [];
-            todoItems.forEach(element => {
-                nodeList.push(new TaskItemNode_1.TaskItemNode(element.content, element["responsible-party-summary"], "", element.id, element.priority, element.hasTickets, element.completed, !util_1.isNullOrUndefined(element.subTasks) && element.subTasks.length > 0, element["responsible-party-ids"], node, "taskItem", provider, this, element.subTasks));
-            });
+            var config = vscode.workspace.getConfiguration('twp');
+            var onlySelf = config.get("OnlySelfAssigned");
+            var showUnassigned = config.get("showUnAssigned");
+            let userData = this._context.globalState.get("twp.data.activeAccount");
+            let userId = userData.userId;
+            for (let i = 0; i < todoItems.length; i++) {
+                let element = todoItems[i];
+                if (!util_1.isNullOrUndefined(element["responsible-party-ids"]) && element["responsible-party-ids"].indexOf(userId.toString()) < 0 && onlySelf) {
+                    continue;
+                }
+                if (util_1.isNullOrUndefined(element["responsible-party-ids"]) && !showUnassigned) {
+                    continue;
+                }
+                nodeList.push(new TaskItemNode_1.TaskItemNode(element.content, util_1.isNullOrUndefined(element["responsible-party-summary"]) ? "Anyone" : element["responsible-party-summary"], "", element.id, element.priority, element.hasTickets, element.completed, !util_1.isNullOrUndefined(element.subTasks) && element.subTasks.length > 0, element["responsible-party-ids"], node, "taskItem", provider, this, element.subTasks));
+            }
             if (todoItems.length === 0) {
                 nodeList.push(new EmptyNode_1.EmptyNode("No Tasks", 0));
             }

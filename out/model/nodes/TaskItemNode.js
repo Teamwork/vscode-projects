@@ -50,9 +50,21 @@ class TaskItemNode {
                 }
                 else {
                     let nodeList = [];
-                    this.subTasks.forEach(element => {
-                        nodeList.push(new TaskItemNode(element.content, element["responsible-party-summary"], "", element.id, element.priority, element.hasTickets, element.completed, !util_1.isNullOrUndefined(element.subTasks) && element.subTasks.length > 0, element["responsible-party-ids"], this, "taskItem", this.provider, this.twp));
-                    });
+                    var config = vscode.workspace.getConfiguration('twp');
+                    var onlySelf = config.get("OnlySelfAssigned");
+                    let userData = this.twp._context.globalState.get("twp.data.activeAccount");
+                    let userId = userData.userId;
+                    var showUnassigned = config.get("showUnAssigned");
+                    for (let i = 0; i < this.subTasks.length; i++) {
+                        let element = this.subTasks[i];
+                        if (!util_1.isNullOrUndefined(element["responsible-party-ids"]) && element["responsible-party-ids"].indexOf(userId.toString()) < 0 && onlySelf) {
+                            continue;
+                        }
+                        if (util_1.isNullOrUndefined(element["responsible-party-ids"]) && !showUnassigned) {
+                            continue;
+                        }
+                        nodeList.push(new TaskItemNode(element.content, util_1.isNullOrUndefined(element["responsible-party-summary"]) ? "Anyone" : element["responsible-party-summary"], "", element.id, element.priority, element.hasTickets, element.completed, !util_1.isNullOrUndefined(element.subTasks) && element.subTasks.length > 0, element["responsible-party-ids"], this, "taskItem", this.provider, this.twp));
+                    }
                     return nodeList;
                 }
             }

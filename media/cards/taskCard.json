@@ -241,7 +241,7 @@
                                                 {
                                                     "type": "TextBlock",
                                                     "spacing": "None",
-                                                    "text": "{datetime}",
+                                                    "text": "{$data['datewritten']}",
                                                     "isSubtle": true,
                                                     "wrap": true
                                                 }
