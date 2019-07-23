@@ -2,11 +2,6 @@
     "type": "AdaptiveCard",
     "body": [
         {
-            "type": "Image",
-            "url": "https://s3.amazonaws.com/tw-desk/i/1/doclogo/197378.20190228210102000.197378.20190228210102000rlycm.png",
-            "size": "Large"
-        },
-        {
             "type": "Container",
             "items": [
                 {
@@ -20,7 +15,7 @@
                                     "size": "Medium",
                                     "weight": "Bolder",
                                     "wrap": true,
-                                    "text": "Archived projects being added once clicked \"Add to all projects\""
+                                    "text": "Something we want to do"
                                 },
                                 {
                                     "type": "TextBlock",
@@ -32,11 +27,11 @@
                                     "facts": [
                                         {
                                             "title": "Project:",
-                                            "value": "[Teamwork Projects App](undefined/projects/13215117)"
+                                            "value": "[Teamwork Projects App](url/projects/421)"
                                         },
                                         {
                                             "title": "TaskList:",
-                                            "value": "[Minor Bugs](undefined/tasklists/1136000)"
+                                            "value": "[Minor Bugs](url/tasklists/123)"
                                         },
                                         {
                                             "title": "Assigned to:",
@@ -57,7 +52,7 @@
                                                 {
                                                     "type": "Image",
                                                     "style": "Person",
-                                                    "url": "https://s3.amazonaws.com/TWFiles/1/userAvatar/userlogo1493205327729946000.jpg",
+                                                    "url": "https://url/TWFiles/1/userAvatar/userlogo1493205327729946000.jpg",
                                                     "size": "Small"
                                                 }
                                             ],
@@ -102,6 +97,7 @@
                             "type": "Column",
                             "items": [
                                 {
+                                    "spacing": "large",
                                     "type": "Image",
                                     "url": "https://tw-synthesiscore-beta.us.teamworkops.com/img/projects/file.png"
                                 }
@@ -114,7 +110,7 @@
                                 {
                                     "type": "TextBlock",
                                     "text": "Attachments:",
-                                    "spacing": "Medium",
+                                    "spacing": "large",
                                     "separator": true,
                                     "color": "Accent",
                                     "weight": "Bolder"
@@ -187,7 +183,7 @@
                                 {
                                     "type": "Image",
                                     "style": "Person",
-                                    "url": "https://s3.amazonaws.com/TWFiles/1/userAvatar/tf_7d5af3ea-984b-429d-ae8c-0dffbbf01523.avatar.jpg",
+                                    "url": "https://url/TWFiles/1/userAvatar/avatar.avatar.jpg",
                                     "size": "Small"
                                 }
                             ],

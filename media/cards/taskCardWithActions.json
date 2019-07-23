@@ -44,7 +44,7 @@
                                             "value": "[{$root['project-name']}]({$root.rooturl}/projects/{$root.id})"
                                         },
                                         {
-                                            "title": "TaskList:",
+                                            "title": "Task List:",
                                             "value": "[{$root['todo-list-name']}]({$root.rooturl}/tasklists/{$root['todo-list-id']})"
                                         },
                                         {
@@ -142,7 +142,7 @@
                                 {
                                     "type": "TextBlock",
                                     "spacing": "None",
-                                    "text": "{datetime}",
+                                    "text": "{$data['datetime']}",
                                     "isSubtle": true,
                                     "wrap": true,
                                     "size": "Small",
@@ -181,6 +181,7 @@
                         "id": "notify",
                         "type": "Input.Toggle",
                         "title": "Notify?",
+                        "text":"Notify?",
                         "wrap": false
                     }
                 ],

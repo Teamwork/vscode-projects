@@ -3,6 +3,8 @@ import {INode} from './model/nodes/INode';
 import { TeamworkProjects } from './teamworkProjects';
 import { ProjectNode } from './model/nodes/ProjectNode';
 import { ProjectErrorNode } from './model/nodes/ProjectErrorNode';
+import { isNullOrUndefined } from 'util';
+import { TeamworkAccount } from './model/teamworkAccount';
 
 
 export class TaskProvider implements vscode.TreeDataProvider<INode> {
@@ -41,8 +43,19 @@ export class TaskProvider implements vscode.TreeDataProvider<INode> {
                     return items;
                 }
                 if(!config){
-                    items.push(new ProjectErrorNode("-> Select Project for Repository","","",0));
-                    return items;   
+
+                    let userData : TeamworkAccount = this.twp._context.globalState.get("twp.data.activeAccount");
+                    let token = userData.token;
+                    let root = userData.rootUrl;
+                    
+                    if(isNullOrUndefined(token) ||isNullOrUndefined(root)){
+                        items.push(new ProjectErrorNode("-> Please login first.","","",0));
+                        return items; 
+                    }else{
+                        items.push(new ProjectErrorNode("-> Select Project for Repository","","",0));
+                        return items; 
+                    }
+ 
                 }
             }
             return element.getChildren(this.context);

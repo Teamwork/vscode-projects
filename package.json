@@ -8,7 +8,7 @@
 		"url": "https://github.com/teamwork/vscode-projects/issues",
 		"email": "integrations@teamwork.com"
 	},
-	"icon": "media/projects.png",
+	"icon": "resources/projects.png",
 	"repository": {
 		"type": "Github",
 		"url": "https://github.com/Teamwork/vscode-projects"
@@ -25,7 +25,7 @@
 			"url": "https://twitter.com/Teamwork"
 		}
 	],
-	"version": "0.5.8",
+	"version": "1.0.0",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
@@ -44,13 +44,15 @@
 				"type": "object",
 				"title": "Teamwork Projects Configuration",
 				"properties": {
-					"twp.APIKey": {
-						"type": "string",
-						"description": "Teamwork Projects API Key"
+					"twp.OnlySelfAssigned": {
+						"default": false,
+						"type": "boolean",
+						"description": "Only show tasks assigned to you."
 					},
-					"twp.APIRoot": {
-						"type": "string",
-						"description": "Teamwork Projects Installation root eg: https://xxx.teamwork.com"
+					"twp.showUnAssigned": {
+						"default": true,
+						"type": "boolean",
+						"description": "Show tasks not assigned to anyone"
 					},
 					"twp.ShowTeamworkPanel": {
 						"default": false,
@@ -65,7 +67,7 @@
 				{
 					"id": "twp_Outline",
 					"title": "Teamwork Projects",
-					"icon": "media/projects-white.svg"
+					"icon": "resources/projects-white.svg"
 				}
 			]
 		},
@@ -82,8 +84,8 @@
 				"command": "twp.completeTask",
 				"title": "Complete Task",
 				"icon": {
-					"light": "media/task.svg",
-					"dark": "media/task.svg"
+					"light": "resources/task.svg",
+					"dark": "resources/task.svg"
 				}
 			},
 			{
@@ -103,12 +105,28 @@
 				}
 			},
 			{
+				"command": "twp.SetAccount",
+				"title": "Account",
+				"icon": {
+					"light": "resources/light/user.svg",
+					"dark": "resources/dark/user.svg"
+				}
+			},
+			{
 				"command": "twp.SetProject",
-				"title": "Teamwork: Select Project for Repository"
+				"title": "Select Project for Repository",
+				"icon": {
+					"light": "resources/projects-white.svg",
+					"dark": "resources/projects-white.svg"
+				}
+			},
+			{
+				"command": "twp.SetActiveProject",
+				"title": "Select the Active Project for Repository"
 			},
 			{
 				"command": "twp.RefreshData",
-				"title": "Teamwork: Refresh all Project Data"
+				"title": "Refresh all Project Data"
 			},
 			{
 				"command": "twp.editTaskFilter",
@@ -125,9 +143,23 @@
 					"light": "resources/icons/clear_filter_light.svg",
 					"dark": "resources/icons/clear_filter_dark.svg"
 				}
+			},
+			{
+				"command": "twp.linkTask",
+				"title": "Create Task",
+				"icon": {
+					"light": "resources/icons/clear_filter_light.svg",
+					"dark": "resources/icons/clear_filter_dark.svg"
+				}
 			}
 		],
 		"menus": {
+			"editor/context": [
+				{
+					"command": "twp.linkTask",
+					"group": "twpGroup"
+				}
+			],
 			"view/item/context": [
 				{
 					"command": "twp.completeTask",
@@ -138,6 +170,16 @@
 			"view/title": [
 				{
 					"command": "taskOutline.refresh",
+					"when": "view == taskOutline",
+					"group": "navigation"
+				},
+				{
+					"command": "twp.SetProject",
+					"when": "view == taskOutline",
+					"group": "navigation"
+				},
+				{
+					"command": "twp.SetAccount",
 					"when": "view == taskOutline",
 					"group": "navigation"
 				}
@@ -160,14 +202,15 @@
 		"@types/rimraf": "^2.0.2"
 	},
 	"dependencies": {
-		"adaptivecards": "^1.1.3",
-		"axios": "^0.18.0",
+		"axios": "^0.18.1",
+		"cryptiles": ">=4.1.2",
 		"dateformat": "^3.0.3",
 		"ftp": "^0.3.10",
+		"hoek": ">=4.2.1",
 		"jsonc-parser": "^0.4.2",
 		"mkdirp": "^0.5.1",
 		"moment": "^2.24.0",
-		"request": "^2.81.0",
+		"request": "^2.88.0",
 		"rimraf": "^2.6.2",
 		"turndown": "^5.0.3",
 		"vsce": "^1.59.0"

@@ -1,10 +1,8 @@
 "use strict";
-// To parse this data:
-//
-//   import { Convert, TaskListResponse } from "./file";
-//
-//   const taskListResponse = Convert.toTaskListResponse(json);
 Object.defineProperty(exports, "__esModule", { value: true });
+class TodoList {
+}
+exports.TodoList = TodoList;
 // Converts JSON strings to/from your types
 class TaskListConverter {
     static toTaskListResponse(json) {

@@ -1,19 +1,39 @@
 import { Project } from "./responses/projectListResponse";
+import { isNullOrUndefined } from "util";
 
 export class ProjectConfig{
     public ActiveProjectName : string;
     public ActiveProjectId: string;
+    public ActiveTaskListId: string;
+    public ActiveTaskListName: string;
     public Projects: ProjectConfigEntry[];
     constructor(projects) {
         this.Projects = projects;
 
-        if(projects){
-            this.ActiveProjectName = projects[0].Name;
-            this.ActiveProjectId = projects[0].Id;
-        }else{
+
+        if(isNullOrUndefined(this.Projects)){
             this.ActiveProjectName = "No Project Selected";
-            this.ActiveProjectId = "0";      
+            this.ActiveProjectId = "0";   
+            return;
         }
+
+        // Active Project no longer selected -> clear
+        if(!this.Projects.find(p=>p.Id === parseInt(this.ActiveProjectId))){
+            this.ActiveProjectName = "";
+            this.ActiveProjectId = "";
+        }
+
+        if(this.ActiveProjectName && this.ActiveProjectName.length < 1){
+            if(projects ){
+                this.ActiveProjectName = projects[0].Name;
+                this.ActiveProjectId = projects[0].Id;
+            }else{
+                this.ActiveProjectName = "No Project Selected";
+                this.ActiveProjectId = "0";      
+            }
+        }
+
+
     }
 }
 

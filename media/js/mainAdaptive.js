@@ -7,6 +7,9 @@
             // Create an AdaptiveCard instance
             var adaptiveCard = new AdaptiveCards.AdaptiveCard();
 
+            // Use Fabric controls when rendering Adaptive Cards
+            //ACFabric.useFabricComponents();
+
             // Example Host Config from MS Teams Dark
             var hostConfig = {
                 "choiceSetInputValueSeparator": ",",
