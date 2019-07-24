@@ -41,10 +41,12 @@ export class ProjectConfigEntry{
     public readonly Name: string;
     public readonly Id: number;
     public readonly Project: Project;
+    public readonly Installation: number;
     
-    constructor(Name,Id, Project) {
+    constructor(Name,Id, Project, Installation) {
         this.Name = Name;
         this.Id = Id;
         this.Project = Project;
+        this.Installation = Installation;
     }
 }

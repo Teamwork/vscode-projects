@@ -82,8 +82,8 @@ export class TeamworkProjectsApi{
             });
         }
 
-       if(!isNullOrUndefined(result.data)){ context.globalState.update("twp.data.project",result.data.projects);}
-       if(!isNullOrUndefined(result.data)){  context.globalState.update("twp.data.projects.lastUpdated", new Date() );}
+       if(!isNullOrUndefined(result.data)){ await context.globalState.update("twp.data.project",result.data.projects);}
+       if(!isNullOrUndefined(result.data)){  await context.globalState.update("twp.data.projects.lastUpdated", new Date() );}
         return result.data.projects;
     }
 
@@ -115,8 +115,8 @@ export class TeamworkProjectsApi{
         let response: TaskListResponse;
     
         // Load from cache if duration less than 30 minutes
-        let cachedNodes : TaskListResponse = context.globalState.get("twp.data." + id + ".tasklist",null);
-        let lastUpdated : Date = context.globalState.get("twp.data.tasklists." + id + ".lastUpdated",new Date() );
+        let cachedNodes : TaskListResponse = await context.globalState.get("twp.data." + id + ".tasklist",null);
+        let lastUpdated : Date = await context.globalState.get("twp.data.tasklists." + id + ".lastUpdated",new Date() );
         if(cachedNodes !== null && cachedNodes["data"]["tasklists"].length > 0 && lastUpdated && !force){
             if(Utilities.DateCompare(lastUpdated,30)){
                 return cachedNodes["data"]["tasklists"];
@@ -134,8 +134,8 @@ export class TeamworkProjectsApi{
         });
     
     
-        context.globalState.update("twp.data." + id + ".tasklist",response);
-        context.globalState.update("twp.data.tasklists." + id + ".lastUpdated",Date.now());
+        await context.globalState.update("twp.data." + id + ".tasklist",response);
+        await context.globalState.update("twp.data.tasklists." + id + ".lastUpdated",Date.now());
         return response["data"]["tasklists"]; 
     }
 
@@ -149,7 +149,7 @@ export class TeamworkProjectsApi{
         let todoResponse: TaskItemResponse;
         // Load from cache if duration less than 30 minutes
         todoItems = context.globalState.get("twp.data." + id + ".todoitem",[]);
-        let lastUpdated : Date = context.globalState.get("twp.data.tasklists." + id + ".todoitem", new Date());
+        let lastUpdated : Date = await  context.globalState.get("twp.data.tasklists." + id + ".todoitem", new Date());
         if(todoItems.length > 0 && lastUpdated && !force){
             if(Utilities.DateCompare(lastUpdated,30)){
                 return todoItems;
@@ -197,8 +197,8 @@ export class TeamworkProjectsApi{
             });
 
             todo = json.data["todo-item"];
-            context.globalState.update("twp.data.task." + id + ".lastUpdated", Date.now());
-            context.globalState.update("twp.data.task." + id, todo);
+            await context.globalState.update("twp.data.task." + id + ".lastUpdated", Date.now());
+            await context.globalState.update("twp.data.task." + id, todo);
         }
 
         var dateFormat = require('dateformat');

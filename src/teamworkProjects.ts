@@ -243,7 +243,7 @@ export class TeamworkProjects{
 
         this.IsLoading = true;
 
-        this.statusBarItem.text = "Teamwork: Updating Projects";
+        this.UpdateStatusBarText("Updating Projects");
         if(this.Config === null) {
             this.Config = await this.GetProjectForRepository();
         }  
@@ -251,14 +251,14 @@ export class TeamworkProjects{
         if(this.Config.Projects !== null){
             this.Config.Projects.forEach(async element =>{
 
-                this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
+                this.UpdateStatusBarText("Teamwork: Refreshing TaskLists");
                 element.Project.TodoLists = await this.API.getTaskLists(this._context,element.Id,true);
                 
-                this.statusBarItem.text = "Teamwork: Refreshing TodoItems";
+                this.UpdateStatusBarText("Teamwork: Refreshing TodoItems");
                 element.Project.TodoLists.forEach(async subelement =>{
                     subelement.TodoItems = await this.API.getTaskItems(this._context,parseInt(subelement.id),true);
                 });
-                this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
+                this.UpdateStatusBarText(this.Config.ActiveProjectName);
             });
         }
         
@@ -352,7 +352,19 @@ export class TeamworkProjects{
             if (fs.existsSync(path)) {
                 config = JSON.parse(fs.readFileSync(path, 'utf8'));
                 if(config){
-                    return config;
+                    if(config.Projects.length > 0){
+                        for(let i = config.Projects.length; i <= 0; i--){
+                            let element = config.Projects[i];
+                            if(!isNullOrUndefined(element.Installation) && element.Installation !== userData.installationId){
+                                config.Projects.splice(i,1);
+                            }                    
+                        }
+                        
+                        return config;
+                    }else{
+                        return new ProjectConfig(null);
+                    }
+
                 }
               }else{
                   return new ProjectConfig(null);
@@ -374,8 +386,11 @@ export class TeamworkProjects{
         var api = new TeamworkProjectsApi(this._context);
         var userData = await api.getLoginData(context,code);
         console.log(JSON.stringify(userData));
-        context.globalState.update("twp.data.activeAccount", userData);
+        await context.globalState.update("twp.data.activeAccount",null);
+        await context.globalState.update("twp.data.activeAccount", userData);
         this.RefreshData();
+        vscode.window.showInformationMessage("You are now logged in as: " + userData.userEmail + "( " + userData.rootUrl + " )");
+        
         return null;
     }
     public async SelectProject() : Promise<ProjectConfig>{
@@ -405,7 +420,7 @@ export class TeamworkProjects{
             
             var items : ProjectConfigEntry[] = [];
             projectItem.forEach(async element =>{
-                items.push(new ProjectConfigEntry(element.label,element.id,element));
+                items.push(new ProjectConfigEntry(element.label,element.id,element, userData.installationId));
             });
             this.Config = new ProjectConfig(items);
             var path = vscode.workspace.rootPath + "/twp.json";
@@ -438,7 +453,7 @@ export class TeamworkProjects{
             
             savedConfig.ActiveProjectId = projectItem.id;
             savedConfig.ActiveProjectName = projectItem.name;
-            this.statusBarItem.text = "Teamwork: " + projectItem.name;
+            this.UpdateStatusBarText(projectItem.name);
 
             var path = vscode.workspace.rootPath + "/twp.json";
             let data = JSON.stringify(savedConfig);  
@@ -452,9 +467,13 @@ export class TeamworkProjects{
     }
 
  
+    public async UpdateStatusBarText(text: string){
+        let userData : TeamworkAccount = this._context.globalState.get("twp.data.activeAccount");
+        this.statusBarItem.text = "Teamwork: " + text + ", " + userData.userEmail;
+    }
+
     public async getTaskLists(context: vscode.ExtensionContext,parentNode: ProjectNode, id: number = 0, force: boolean = false) : Promise<INode[]>{
-        var statusBarText = this.statusBarItem.text;
-        this.statusBarItem.text = "Loading Tasklists......";
+        this.UpdateStatusBarText("Loading Tasklists......");
 
         // Load task lists
         var taskLists = await this.API.getTaskLists(context,parentNode.id,force);
@@ -469,13 +488,13 @@ export class TeamworkProjects{
         }
 
 
-        this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
+        this.UpdateStatusBarText(this.Config.ActiveProjectName);
         return nodeList; 
     }
    
     public async getTaskItems(context: vscode.ExtensionContext, node: TaskListNode,provider: TaskProvider, id: number = 0, force: boolean = false) : Promise<INode[]>{
 
-        this.statusBarItem.text = "Loading tasks......";
+        this.UpdateStatusBarText("Loading tasks......");
 
         let todoItems = await this.API.getTaskItems(context, node.id, force);
         let nodeList: INode[] = []; 
@@ -514,7 +533,7 @@ export class TeamworkProjects{
         }
 
 
-        this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
+        this.UpdateStatusBarText(this.Config.ActiveProjectName);
         return nodeList; 
     }
 
