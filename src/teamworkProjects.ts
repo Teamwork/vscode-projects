@@ -34,6 +34,7 @@ export class TeamworkProjects{
 
     constructor(private context: vscode.ExtensionContext,extensionPath: string) {
         this._context = context;
+        this.context = context;
         this._extensionPath = extensionPath;
         this.API = new TeamworkProjectsApi(this._context);
         this.WebViews = new WebViews(this._context, this._extensionPath);
@@ -335,6 +336,9 @@ export class TeamworkProjects{
         try{
 
             let userData : TeamworkAccount = this.context.globalState.get("twp.data.activeAccount");
+            if(isNullOrUndefined(userData)){
+                return;
+            }
             let token = userData.token;
             let root = userData.rootUrl;
             
@@ -376,7 +380,12 @@ export class TeamworkProjects{
     }
     public async SelectProject() : Promise<ProjectConfig>{
 
-        let userData : TeamworkAccount = this._context.globalState.get("twp.data.activeAccount");
+        let userData : TeamworkAccount = this.context.globalState.get("twp.data.activeAccount");
+        
+        if(isNullOrUndefined(userData)){
+            this.SelectAccount();
+            return;
+        }
         let token = userData.token;
         let root = userData.rootUrl;
 

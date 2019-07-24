@@ -18,15 +18,22 @@ export class TeamworkProjectsApi{
 
     constructor(context: vscode.ExtensionContext) {
         let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
-        let token = userData.token;
-        this.root = userData.rootUrl;
-
-
-        if(!token || !this.root){
+        let token: string;
+        
+        if(isNullOrUndefined(userData)){
             this.isConfigured = false;
-            vscode.window.showErrorMessage("Please Configure the extension first!"); 
             return; 
-        }  
+        }else{
+            token = userData.token;
+            this.root = userData.rootUrl;
+    
+    
+            if(!token || !this.root){
+                this.isConfigured = false;
+                return; 
+            } 
+        }
+ 
 
         this.axios.defaults.headers.common = {
             'User-Agent': `tw-vscode (${process.platform} | ${vscode.extensions.getExtension('teamwork.twp').packageJSON.version})`,

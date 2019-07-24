@@ -45,16 +45,22 @@ export class TaskProvider implements vscode.TreeDataProvider<INode> {
                 if(!config){
 
                     let userData : TeamworkAccount = this.twp._context.globalState.get("twp.data.activeAccount");
-                    let token = userData.token;
-                    let root = userData.rootUrl;
-                    
-                    if(isNullOrUndefined(token) ||isNullOrUndefined(root)){
+                    if(isNullOrUndefined(userData)){
                         items.push(new ProjectErrorNode("-> Please login first.","","",0));
                         return items; 
                     }else{
-                        items.push(new ProjectErrorNode("-> Select Project for Repository","","",0));
-                        return items; 
+                        let token = userData.token;
+                        let root = userData.rootUrl;
+                        
+                        if(isNullOrUndefined(token) ||isNullOrUndefined(root) || token === "" || root === ""){
+                            items.push(new ProjectErrorNode("-> Please login first.","","",0));
+                            return items; 
+                        }else{
+                            items.push(new ProjectErrorNode("-> Select Project for Repository","","",0));
+                            return items; 
+                        }
                     }
+ 
  
                 }
             }
