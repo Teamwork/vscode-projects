@@ -31,13 +31,14 @@ export class TeamworkProjects{
     public API: TeamworkProjectsApi;
     public IsLoading: Boolean = false;
     public WebViews: WebViews;
+    public ActiveAccount: TeamworkAccount;
 
     constructor(private context: vscode.ExtensionContext,extensionPath: string) {
         this._context = context;
         this.context = context;
         this._extensionPath = extensionPath;
-        this.API = new TeamworkProjectsApi(this._context);
-        this.WebViews = new WebViews(this._context, this._extensionPath);
+        this.API = new TeamworkProjectsApi(this._context, this);
+        this.WebViews = new WebViews(this._context, this._extensionPath, this.API);
     }
     private _disposables: vscode.Disposable[] = [];
 	public dispose() {
@@ -229,40 +230,52 @@ export class TeamworkProjects{
     public async RefreshData(){
 
         let userData : TeamworkAccount = this.context.globalState.get("twp.data.activeAccount");
-        let token = userData.token;
-        let root = userData.rootUrl;
+        let tempUserData = this.ActiveAccount;
         
-        if(!token || !root){
-            return; 
+        if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
+        || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
+            userData = tempUserData;
         }
 
-
-        if(this.IsLoading){
+        if(isNullOrUndefined(userData)){
             return;
-        }
-
-        this.IsLoading = true;
-
-        this.statusBarItem.text = "Teamwork: Updating Projects";
-        if(this.Config === null) {
-            this.Config = await this.GetProjectForRepository();
-        }  
-
-        if(this.Config.Projects !== null){
-            this.Config.Projects.forEach(async element =>{
-
-                this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
-                element.Project.TodoLists = await this.API.getTaskLists(this._context,element.Id,true);
-                
-                this.statusBarItem.text = "Teamwork: Refreshing TodoItems";
-                element.Project.TodoLists.forEach(async subelement =>{
-                    subelement.TodoItems = await this.API.getTaskItems(this._context,parseInt(subelement.id),true);
+        }else{
+            let token = userData.token;
+            let root = userData.rootUrl;
+            
+            if(!token || !root){
+                return; 
+            }
+    
+    
+            if(this.IsLoading){
+                return;
+            }
+    
+            this.IsLoading = true;
+    
+            this.statusBarItem.text = "Teamwork: Updating Projects";
+            if(this.Config === null) {
+                this.Config = await this.GetProjectForRepository();
+            }  
+    
+            if(this.Config.Projects !== null){
+                this.Config.Projects.forEach(async element =>{
+    
+                    this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
+                    element.Project.TodoLists = await this.API.getTaskLists(this._context,element.Id,true);
+                    
+                    this.statusBarItem.text = "Teamwork: Refreshing TodoItems";
+                    element.Project.TodoLists.forEach(async subelement =>{
+                        subelement.TodoItems = await this.API.getTaskItems(this._context,parseInt(subelement.id),true);
+                    });
+                    this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
                 });
-                this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
-            });
+            }
+            
+            this.IsLoading = false;
         }
-        
-        this.IsLoading = false;
+
     }
 
     public toProjectListResponse(json: string): ProjectListResponse {
@@ -371,16 +384,22 @@ export class TeamworkProjects{
     }
 
     public async FinishLogin(context: vscode.ExtensionContext, code: string) : Promise<TeamworkAccount>{
-        var api = new TeamworkProjectsApi(this._context);
-        var userData = await api.getLoginData(context,code);
-        console.log(JSON.stringify(userData));
+        this.API = new TeamworkProjectsApi(this._context, this);
+        var userData = await this.API.getLoginData(context,code);
         context.globalState.update("twp.data.activeAccount", userData);
+        this.ActiveAccount = userData;
         this.RefreshData();
         return null;
     }
     public async SelectProject() : Promise<ProjectConfig>{
 
         let userData : TeamworkAccount = this.context.globalState.get("twp.data.activeAccount");
+        let tempUserData = this.ActiveAccount;
+        
+        if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
+        || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
+            userData = tempUserData;
+        }
         
         if(isNullOrUndefined(userData)){
             this.SelectAccount();

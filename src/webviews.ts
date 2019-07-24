@@ -10,10 +10,10 @@ export class WebViews{
     public readonly _context: vscode.ExtensionContext;
     public API: TeamworkProjectsApi;
 
-    constructor(private context: vscode.ExtensionContext,extensionPath: string) {
+    constructor(private context: vscode.ExtensionContext,extensionPath: string, api: TeamworkProjectsApi) {
         this._context = context;
         this._extensionPath = extensionPath;
-        this.API = new TeamworkProjectsApi(this._context);
+        this.API = api;
     }
 
     public GetWebViewContentLoader(){

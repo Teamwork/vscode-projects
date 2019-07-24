@@ -8,6 +8,7 @@ import { Person, PeopleResponse} from './model/responses/peopleResponse';
 import { TaskQuickAdd, TodoItemQuick } from './model/taskQuickAdd';
 import { TeamworkAccount } from './model/teamworkAccount';
 import { isNullOrUndefined } from 'util';
+import { TeamworkProjects } from './teamworkProjects';
 
 export class TeamworkProjectsApi{
 
@@ -15,9 +16,19 @@ export class TeamworkProjectsApi{
     private axios = require("axios");
     private isConfigured: boolean;
     private root: string;
+    private twp: TeamworkProjects;
 
-    constructor(context: vscode.ExtensionContext) {
+    constructor(context: vscode.ExtensionContext, teamwork: TeamworkProjects) {
+        this.twp = teamwork;
         let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
+        let tempUserData = this.twp.ActiveAccount;
+
+
+        if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
+        || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
+            userData = tempUserData;
+        }
+
         let token: string;
         
         if(isNullOrUndefined(userData)){
@@ -49,6 +60,20 @@ export class TeamworkProjectsApi{
 
     public async GetProjects(context: vscode.ExtensionContext, force: boolean = false, includePeople: boolean= false, getAll: boolean = false, getList: string = "") : Promise<Project[]>{
        
+        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
+        let tempUserData = this.twp.ActiveAccount;
+        
+        if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
+        || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
+            userData = tempUserData;
+        }
+
+        if(!isNullOrUndefined(userData)){
+            this.isConfigured = true;
+        }
+
+
+
         if(!this.isConfigured){
             vscode.window.showErrorMessage("Please Configure the extension first!"); 
             return; 
