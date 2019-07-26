@@ -1,8 +1,9 @@
 # Change Log
 
-All notable changes to the "twp" extension will be documented in this file.
+## 1.0.4
+- fixed adding comments
+- fixed rare issue where task lists would not show when trying to create a task
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 ## 1.0.3
 - workaround for vscode "globalStorage" bug

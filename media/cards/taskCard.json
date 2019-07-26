@@ -301,14 +301,6 @@
                         "type": "Input.Text",
                         "placeholder": "Your comment",
                         "isMultiline": true
-                    },
-                    {
-                        "id": "comment",
-                        "type": "Input.Toggle",
-                        "placeholder": "Your comment",
-                        "isMultiline": true,
-                        "value": "false",
-                        "wrap": false
                     }
                 ],
                 "actions": [

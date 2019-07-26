@@ -148,10 +148,6 @@ export class TeamworkProjects{
 
     public async QuickAddTask(){
         
-        if(this.IsLoading){
-            return;
-        }
-
         var editor = vscode.window.activeTextEditor;
         if (!editor) {
             vscode.window.showInformationMessage("You need to have code selected to use this.");
@@ -180,6 +176,7 @@ export class TeamworkProjects{
     
     
                 const gitExtension = vscode.extensions.getExtension('vscode.git').exports;
+               
                 var gitLink = "";
                 var gitBranch = "";
                 if(gitExtension){
@@ -261,6 +258,7 @@ export class TeamworkProjects{
                 this.UpdateStatusBarText(this.Config.ActiveProjectName);
             });
         }
+        this.IsLoading = false;
 
     }
 
@@ -382,9 +380,8 @@ export class TeamworkProjects{
     }
 
     public async FinishLogin(context: vscode.ExtensionContext, code: string) : Promise<TeamworkAccount>{
-        var api = new TeamworkProjectsApi(this._context, this);
-        var userData = await api.getLoginData(context,code);
-        console.log(JSON.stringify(userData));
+        this.API = new TeamworkProjectsApi(this._context, this);
+        var userData = await this.API.getLoginData(context,code);
         await context.globalState.update("twp.data.activeAccount",null);
         await context.globalState.update("twp.data.activeAccount", userData);
         this.RefreshData();
