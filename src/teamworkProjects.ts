@@ -384,6 +384,7 @@ export class TeamworkProjects{
         var userData = await this.API.getLoginData(context,code);
         await context.globalState.update("twp.data.activeAccount",null);
         await context.globalState.update("twp.data.activeAccount", userData);
+        this.ActiveAccount = userData;
         this.RefreshData();
         vscode.window.showInformationMessage("You are now logged in as: " + userData.userEmail + "( " + userData.rootUrl + " )");
         
@@ -408,6 +409,12 @@ export class TeamworkProjects{
 
         if(isNullOrUndefined(token) || isNullOrUndefined(root)){
             this.SelectAccount();
+            return;
+        }
+
+
+        if(isNullOrUndefined(vscode.workspace.rootPath) || isNullOrUndefined(vscode.workspace.getWorkspaceFolder)){
+            vscode.window.showErrorMessage("You need to have a workspace or folder opened to select a project");
             return;
         }
 
