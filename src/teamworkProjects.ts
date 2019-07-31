@@ -206,6 +206,10 @@ export class TeamworkProjects{
                     var taskDetails = await this.API.getTodoItem(this._context,parseInt(id),true);
 
                     var langConfig = Utilities.GetActiveLanguageConfig();
+                    //Task: Need to find a workaround for files without a comment symbol configured in VSCode
+                    //Link: https://digitalcrew.teamwork.com//tasks/14804255
+                    //Assigned To: Tim Cadenbach
+
                     var commentWrapper = langConfig.comments.lineComment;
                     var content = taskDetails.content;
                     var responsible = taskDetails["responsible-party-names"];
@@ -432,6 +436,9 @@ export class TeamworkProjects{
                 items.push(new ProjectConfigEntry(element.label,element.id,element, userData.installationId));
             });
             this.Config = new ProjectConfig(items);
+            //Task: we should probably allow users to customize the filename storing projects
+            //Link: https://digitalcrew.teamwork.com//tasks/14804236
+            //Assigned To: Tim Cadenbach
             var path = vscode.workspace.rootPath + "/twp.json";
             let data = JSON.stringify(this.Config);  
             fs.writeFileSync(path, data);
