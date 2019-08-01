@@ -33,7 +33,7 @@
                                     "facts": [
                                         {
                                             "title": "Project:",
-                                            "value": "[{$root['project-name']}]({$root.rooturl}/projects/{$root.id})"
+                                            "value": "[{$root['project-name']}]({$root.rooturl}/projects/{$root['project-id']})"
                                         },
                                         {
                                             "title": "TaskList:",

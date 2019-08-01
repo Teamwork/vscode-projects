@@ -209,7 +209,6 @@ export class TeamworkProjects{
                     //Task: Need to find a workaround for files without a comment symbol configured in VSCode
                     //Link: https://digitalcrew.teamwork.com//tasks/14804255
                     //Assigned To: Tim Cadenbach
-
                     var commentWrapper = langConfig.comments.lineComment;
                     var content = taskDetails.content;
                     var responsible = taskDetails["responsible-party-names"];
@@ -302,7 +301,7 @@ export class TeamworkProjects{
 
 
         if (this.Config.ActiveProjectId === ""){
-            this.SelectActiveProject();
+           await this.SelectActiveProject();
         }
 
         this.Config.Projects.forEach(element => {
