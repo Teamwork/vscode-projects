@@ -26,9 +26,10 @@ class TeamworkProjects {
         this.IsLoading = false;
         this._disposables = [];
         this._context = context;
+        this.context = context;
         this._extensionPath = extensionPath;
-        this.API = new teamworkProjectsApi_1.TeamworkProjectsApi(this._context);
-        this.WebViews = new webviews_1.WebViews(this._context, this._extensionPath);
+        this.API = new teamworkProjectsApi_1.TeamworkProjectsApi(this._context, this);
+        this.WebViews = new webviews_1.WebViews(this._context, this._extensionPath, this.API);
     }
     dispose() {
         // Clean up our resources
@@ -129,9 +130,6 @@ class TeamworkProjects {
     }
     QuickAddTask() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.IsLoading) {
-                return;
-            }
             var editor = vscode.window.activeTextEditor;
             if (!editor) {
                 vscode.window.showInformationMessage("You need to have code selected to use this.");
@@ -149,19 +147,20 @@ class TeamworkProjects {
                     const result = yield vscode.window.showInputBox({
                         placeHolder: 'Task Title @person [today|tomorrow]',
                     });
-                    const gitExtension = vscode.extensions.getExtension('vscode.git').exports;
-                    var gitLink = "";
-                    var gitBranch = "";
-                    if (gitExtension) {
+                    let gitLink = "";
+                    let gitBranch = "";
+                    const gitExtensionExports = vscode.extensions.getExtension('vscode.git').exports;
+                    if (gitExtensionExports) {
+                        const gitExtension = gitExtensionExports.exports;
                         const api = gitExtension.getAPI(1);
                         if (api && api.repositories.length > 0) {
-                            var repo = api.repositories[0];
-                            var remote = repo.state.remotes[0];
+                            let repo = api.repositories[0];
+                            let remote = repo.state.remotes[0];
                             gitBranch = repo.state.HEAD.name;
                             gitLink = remote.fetchUrl.replace(".git", "") + "/blob/" + gitBranch + fileName + "#L" + line;
                         }
                     }
-                    var taskDescription = "Task added from VSCode: \n";
+                    let taskDescription = "Task added from VSCode: \n";
                     taskDescription += "File: " + fileName + "\n";
                     taskDescription += "Line: " + line + "\n";
                     if (gitBranch.length > 0) {
@@ -179,6 +178,9 @@ class TeamworkProjects {
                         var id = newTask["data"]["taskIds"];
                         var taskDetails = yield this.API.getTodoItem(this._context, parseInt(id), true);
                         var langConfig = utilities_1.Utilities.GetActiveLanguageConfig();
+                        //Task: Need to find a workaround for files without a comment symbol configured in VSCode
+                        //Link: https://digitalcrew.teamwork.com//tasks/14804255
+                        //Assigned To: Tim Cadenbach
                         var commentWrapper = langConfig.comments.lineComment;
                         var content = taskDetails.content;
                         var responsible = taskDetails["responsible-party-names"];
@@ -197,28 +199,28 @@ class TeamworkProjects {
     RefreshData() {
         return __awaiter(this, void 0, void 0, function* () {
             let userData = this.context.globalState.get("twp.data.activeAccount");
-            let token = userData.token;
-            let root = userData.rootUrl;
-            if (!token || !root) {
-                return;
+            let tempUserData = this.ActiveAccount;
+            if ((util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData))
+                || (!util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)) {
+                userData = tempUserData;
             }
-            if (this.IsLoading) {
+            if (util_1.isNullOrUndefined(userData)) {
                 return;
             }
             this.IsLoading = true;
-            this.statusBarItem.text = "Teamwork: Updating Projects";
+            this.UpdateStatusBarText("Updating Projects");
             if (this.Config === null) {
                 this.Config = yield this.GetProjectForRepository();
             }
             if (this.Config.Projects !== null) {
                 this.Config.Projects.forEach((element) => __awaiter(this, void 0, void 0, function* () {
-                    this.statusBarItem.text = "Teamwork: Refreshing TaskLists";
+                    this.UpdateStatusBarText("Teamwork: Refreshing TaskLists");
                     element.Project.TodoLists = yield this.API.getTaskLists(this._context, element.Id, true);
-                    this.statusBarItem.text = "Teamwork: Refreshing TodoItems";
+                    this.UpdateStatusBarText("Teamwork: Refreshing TodoItems");
                     element.Project.TodoLists.forEach((subelement) => __awaiter(this, void 0, void 0, function* () {
                         subelement.TodoItems = yield this.API.getTaskItems(this._context, parseInt(subelement.id), true);
                     }));
-                    this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
+                    this.UpdateStatusBarText(this.Config.ActiveProjectName);
                 }));
             }
             this.IsLoading = false;
@@ -251,7 +253,7 @@ class TeamworkProjects {
                 this.Config = yield this.GetProjectForRepository();
             }
             if (this.Config.ActiveProjectId === "") {
-                this.SelectActiveProject();
+                yield this.SelectActiveProject();
             }
             this.Config.Projects.forEach(element => {
                 if (element.Id.toString() === this.Config.ActiveProjectId) {
@@ -281,6 +283,14 @@ class TeamworkProjects {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let userData = this.context.globalState.get("twp.data.activeAccount");
+                let tempUserData = this.ActiveAccount;
+                if ((util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData))
+                    || (!util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)) {
+                    userData = tempUserData;
+                }
+                if (util_1.isNullOrUndefined(userData)) {
+                    return;
+                }
                 let token = userData.token;
                 let root = userData.rootUrl;
                 if (!token || !root) {
@@ -291,7 +301,18 @@ class TeamworkProjects {
                 if (fs.existsSync(path)) {
                     config = JSON.parse(fs.readFileSync(path, 'utf8'));
                     if (config) {
-                        return config;
+                        if (config.Projects.length > 0) {
+                            for (let i = config.Projects.length; i <= 0; i--) {
+                                let element = config.Projects[i];
+                                if (!util_1.isNullOrUndefined(element.Installation) && element.Installation !== userData.installationId) {
+                                    config.Projects.splice(i, 1);
+                                }
+                            }
+                            return config;
+                        }
+                        else {
+                            return new projectConfig_1.ProjectConfig(null);
+                        }
                     }
                 }
                 else {
@@ -312,21 +333,39 @@ class TeamworkProjects {
     }
     FinishLogin(context, code) {
         return __awaiter(this, void 0, void 0, function* () {
-            var api = new teamworkProjectsApi_1.TeamworkProjectsApi(this._context);
-            var userData = yield api.getLoginData(context, code);
-            console.log(JSON.stringify(userData));
-            context.globalState.update("twp.data.activeAccount", userData);
+            this.API = new teamworkProjectsApi_1.TeamworkProjectsApi(this._context, this);
+            var userData = yield this.API.getLoginData(context, code);
+            yield context.globalState.update("twp.data.activeAccount", null);
+            yield context.globalState.update("twp.data.activeAccount", userData);
+            //Task: switch all account references in code to use variable instead of globalState
+            //Link: https://digitalcrew.teamwork.com//tasks/14849632
+            //Assigned To: Tim Cadenbach
+            this.ActiveAccount = userData;
             this.RefreshData();
+            vscode.window.showInformationMessage("You are now logged in as: " + userData.userEmail + "( " + userData.rootUrl + " )");
             return null;
         });
     }
     SelectProject() {
         return __awaiter(this, void 0, void 0, function* () {
-            let userData = this._context.globalState.get("twp.data.activeAccount");
+            let userData = this.context.globalState.get("twp.data.activeAccount");
+            let tempUserData = this.ActiveAccount;
+            if ((util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData))
+                || (!util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)) {
+                userData = tempUserData;
+            }
+            if (util_1.isNullOrUndefined(userData)) {
+                this.SelectAccount();
+                return;
+            }
             let token = userData.token;
             let root = userData.rootUrl;
             if (util_1.isNullOrUndefined(token) || util_1.isNullOrUndefined(root)) {
                 this.SelectAccount();
+                return;
+            }
+            if (util_1.isNullOrUndefined(vscode.workspace.rootPath) || util_1.isNullOrUndefined(vscode.workspace.getWorkspaceFolder)) {
+                vscode.window.showErrorMessage("You need to have a workspace or folder opened to select a project");
                 return;
             }
             let savedConfig = yield this.GetProjectForRepository();
@@ -334,9 +373,12 @@ class TeamworkProjects {
             if (projectItem) {
                 var items = [];
                 projectItem.forEach((element) => __awaiter(this, void 0, void 0, function* () {
-                    items.push(new projectConfig_1.ProjectConfigEntry(element.label, element.id, element));
+                    items.push(new projectConfig_1.ProjectConfigEntry(element.label, element.id, element, userData.installationId));
                 }));
                 this.Config = new projectConfig_1.ProjectConfig(items);
+                //Task: we should probably allow users to customize the filename storing projects
+                //Link: https://digitalcrew.teamwork.com//tasks/14804236
+                //Assigned To: Tim Cadenbach
                 var path = vscode.workspace.rootPath + "/twp.json";
                 let data = JSON.stringify(this.Config);
                 fs.writeFileSync(path, data);
@@ -362,7 +404,7 @@ class TeamworkProjects {
             if (projectItem) {
                 savedConfig.ActiveProjectId = projectItem.id;
                 savedConfig.ActiveProjectName = projectItem.name;
-                this.statusBarItem.text = "Teamwork: " + projectItem.name;
+                this.UpdateStatusBarText(projectItem.name);
                 var path = vscode.workspace.rootPath + "/twp.json";
                 let data = JSON.stringify(savedConfig);
                 fs.writeFileSync(path, data);
@@ -372,10 +414,15 @@ class TeamworkProjects {
             }
         });
     }
+    UpdateStatusBarText(text) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let userData = this._context.globalState.get("twp.data.activeAccount");
+            this.statusBarItem.text = "Teamwork: " + text + ", " + userData.userEmail;
+        });
+    }
     getTaskLists(context, parentNode, id = 0, force = false) {
         return __awaiter(this, void 0, void 0, function* () {
-            var statusBarText = this.statusBarItem.text;
-            this.statusBarItem.text = "Loading Tasklists......";
+            this.UpdateStatusBarText("Loading Tasklists......");
             // Load task lists
             var taskLists = yield this.API.getTaskLists(context, parentNode.id, force);
             let nodeList = [];
@@ -385,13 +432,13 @@ class TeamworkProjects {
             if (taskLists.length === 0) {
                 nodeList.push(new EmptyNode_1.EmptyNode("No TaskLists", 0));
             }
-            this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
+            this.UpdateStatusBarText(this.Config.ActiveProjectName);
             return nodeList;
         });
     }
     getTaskItems(context, node, provider, id = 0, force = false) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.statusBarItem.text = "Loading tasks......";
+            this.UpdateStatusBarText("Loading tasks......");
             let todoItems = yield this.API.getTaskItems(context, node.id, force);
             let nodeList = [];
             var config = vscode.workspace.getConfiguration('twp');
@@ -412,7 +459,7 @@ class TeamworkProjects {
             if (todoItems.length === 0) {
                 nodeList.push(new EmptyNode_1.EmptyNode("No Tasks", 0));
             }
-            this.statusBarItem.text = "Teamwork: " + this.Config.ActiveProjectName;
+            this.UpdateStatusBarText(this.Config.ActiveProjectName);
             return nodeList;
         });
     }

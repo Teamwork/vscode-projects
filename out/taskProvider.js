@@ -42,15 +42,25 @@ class TaskProvider {
                     }
                     if (!config) {
                         let userData = this.twp._context.globalState.get("twp.data.activeAccount");
-                        let token = userData.token;
-                        let root = userData.rootUrl;
-                        if (util_1.isNullOrUndefined(token) || util_1.isNullOrUndefined(root)) {
+                        let tempUserData = this.twp.ActiveAccount;
+                        if (util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData)) {
+                            userData = tempUserData;
+                        }
+                        if (util_1.isNullOrUndefined(userData)) {
                             items.push(new ProjectErrorNode_1.ProjectErrorNode("-> Please login first.", "", "", 0));
                             return items;
                         }
                         else {
-                            items.push(new ProjectErrorNode_1.ProjectErrorNode("-> Select Project for Repository", "", "", 0));
-                            return items;
+                            let token = userData.token;
+                            let root = userData.rootUrl;
+                            if (util_1.isNullOrUndefined(token) || util_1.isNullOrUndefined(root) || token === "" || root === "") {
+                                items.push(new ProjectErrorNode_1.ProjectErrorNode("-> Please login first.", "", "", 0));
+                                return items;
+                            }
+                            else {
+                                items.push(new ProjectErrorNode_1.ProjectErrorNode("-> Select Project for Repository", "", "", 0));
+                                return items;
+                            }
                         }
                     }
                 }

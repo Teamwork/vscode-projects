@@ -1,4 +1,8 @@
 # Change Log
+## 1.0.7
+- fixed an issue for EU accounts
+- fixed a login issue
+
 ## 1.0.6
 - fixed a bug where links on the task card where not pointing to the correct url
 - Creating a task without an active project picked should be a bit more smooth now. 

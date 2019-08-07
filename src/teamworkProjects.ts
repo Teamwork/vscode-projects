@@ -174,21 +174,20 @@ export class TeamworkProjects{
                     placeHolder: 'Task Title @person [today|tomorrow]',
                 });
     
-    
-                const gitExtension = vscode.extensions.getExtension('vscode.git').exports;
-               
-                var gitLink = "";
-                var gitBranch = "";
-                if(gitExtension){
+                let gitLink = "";
+                let gitBranch = "";
+                const gitExtensionExports = vscode.extensions.getExtension('vscode.git').exports;
+                if(gitExtensionExports){
+                    const gitExtension = gitExtensionExports.exports;
                     const api = gitExtension.getAPI(1);
                     if(api && api.repositories.length > 0){
-                        var repo = api.repositories[0];
-                        var remote = repo.state.remotes[0];
+                        let repo = api.repositories[0];
+                        let remote = repo.state.remotes[0];
                         gitBranch = repo.state.HEAD.name;
                         gitLink = remote.fetchUrl.replace(".git","") + "/blob/" + gitBranch + fileName + "#L" + line;
                     }
                  }
-                var taskDescription = "Task added from VSCode: \n";
+                 let taskDescription = "Task added from VSCode: \n";
                 taskDescription += "File: " + fileName + "\n";
                 taskDescription += "Line: " + line + "\n";
                 if(gitBranch.length > 0) {taskDescription += "Branch:" + gitBranch + "\n";}
@@ -336,6 +335,14 @@ export class TeamworkProjects{
         try{
 
             let userData : TeamworkAccount = this.context.globalState.get("twp.data.activeAccount");
+            let tempUserData = this.ActiveAccount;
+        
+            if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
+            || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
+                userData = tempUserData;
+            }
+
+
             if(isNullOrUndefined(userData)){
                 return;
             }
@@ -387,6 +394,9 @@ export class TeamworkProjects{
         var userData = await this.API.getLoginData(context,code);
         await context.globalState.update("twp.data.activeAccount",null);
         await context.globalState.update("twp.data.activeAccount", userData);
+        //Task: switch all account references in code to use variable instead of globalState
+        //Link: https://digitalcrew.teamwork.com//tasks/14849632
+        //Assigned To: Tim Cadenbach
         this.ActiveAccount = userData;
         this.RefreshData();
         vscode.window.showInformationMessage("You are now logged in as: " + userData.userEmail + "( " + userData.rootUrl + " )");

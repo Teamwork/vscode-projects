@@ -28,10 +28,11 @@ class ProjectConfig {
 }
 exports.ProjectConfig = ProjectConfig;
 class ProjectConfigEntry {
-    constructor(Name, Id, Project) {
+    constructor(Name, Id, Project, Installation) {
         this.Name = Name;
         this.Id = Id;
         this.Project = Project;
+        this.Installation = Installation;
     }
 }
 exports.ProjectConfigEntry = ProjectConfigEntry;

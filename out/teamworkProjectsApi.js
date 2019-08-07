@@ -14,15 +14,27 @@ const taskQuickAdd_1 = require("./model/taskQuickAdd");
 const teamworkAccount_1 = require("./model/teamworkAccount");
 const util_1 = require("util");
 class TeamworkProjectsApi {
-    constructor(context) {
+    constructor(context, teamwork) {
         this.axios = require("axios");
+        this.twp = teamwork;
         let userData = context.globalState.get("twp.data.activeAccount");
-        let token = userData.token;
-        this.root = userData.rootUrl;
-        if (!token || !this.root) {
+        let tempUserData = this.twp.ActiveAccount;
+        if ((util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData))
+            || (!util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)) {
+            userData = tempUserData;
+        }
+        let token;
+        if (util_1.isNullOrUndefined(userData)) {
             this.isConfigured = false;
-            vscode.window.showErrorMessage("Please Configure the extension first!");
             return;
+        }
+        else {
+            token = userData.token;
+            this.root = userData.rootUrl;
+            if (!token || !this.root) {
+                this.isConfigured = false;
+                return;
+            }
         }
         this.axios.defaults.headers.common = {
             'User-Agent': `tw-vscode (${process.platform} | ${vscode.extensions.getExtension('teamwork.twp').packageJSON.version})`,
@@ -32,6 +44,15 @@ class TeamworkProjectsApi {
     }
     GetProjects(context, force = false, includePeople = false, getAll = false, getList = "") {
         return __awaiter(this, void 0, void 0, function* () {
+            let userData = context.globalState.get("twp.data.activeAccount");
+            let tempUserData = this.twp.ActiveAccount;
+            if ((util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData))
+                || (!util_1.isNullOrUndefined(userData) && !util_1.isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)) {
+                userData = tempUserData;
+            }
+            if (!util_1.isNullOrUndefined(userData)) {
+                this.isConfigured = true;
+            }
             if (!this.isConfigured) {
                 vscode.window.showErrorMessage("Please Configure the extension first!");
                 return;
@@ -61,10 +82,10 @@ class TeamworkProjectsApi {
                 }));
             }
             if (!util_1.isNullOrUndefined(result.data)) {
-                context.globalState.update("twp.data.project", result.data.projects);
+                yield context.globalState.update("twp.data.project", result.data.projects);
             }
             if (!util_1.isNullOrUndefined(result.data)) {
-                context.globalState.update("twp.data.projects.lastUpdated", new Date());
+                yield context.globalState.update("twp.data.projects.lastUpdated", new Date());
             }
             return result.data.projects;
         });
@@ -95,8 +116,8 @@ class TeamworkProjectsApi {
             // Lets check our cache first
             let response;
             // Load from cache if duration less than 30 minutes
-            let cachedNodes = context.globalState.get("twp.data." + id + ".tasklist", null);
-            let lastUpdated = context.globalState.get("twp.data.tasklists." + id + ".lastUpdated", new Date());
+            let cachedNodes = yield context.globalState.get("twp.data." + id + ".tasklist", null);
+            let lastUpdated = yield context.globalState.get("twp.data.tasklists." + id + ".lastUpdated", new Date());
             if (cachedNodes !== null && cachedNodes["data"]["tasklists"].length > 0 && lastUpdated && !force) {
                 if (utilities_1.Utilities.DateCompare(lastUpdated, 30)) {
                     return cachedNodes["data"]["tasklists"];
@@ -110,8 +131,8 @@ class TeamworkProjectsApi {
                 .catch(function (error) {
                 console.log(error);
             });
-            context.globalState.update("twp.data." + id + ".tasklist", response);
-            context.globalState.update("twp.data.tasklists." + id + ".lastUpdated", Date.now());
+            yield context.globalState.update("twp.data." + id + ".tasklist", response);
+            yield context.globalState.update("twp.data.tasklists." + id + ".lastUpdated", Date.now());
             return response["data"]["tasklists"];
         });
     }
@@ -125,7 +146,7 @@ class TeamworkProjectsApi {
             let todoResponse;
             // Load from cache if duration less than 30 minutes
             todoItems = context.globalState.get("twp.data." + id + ".todoitem", []);
-            let lastUpdated = context.globalState.get("twp.data.tasklists." + id + ".todoitem", new Date());
+            let lastUpdated = yield context.globalState.get("twp.data.tasklists." + id + ".todoitem", new Date());
             if (todoItems.length > 0 && lastUpdated && !force) {
                 if (utilities_1.Utilities.DateCompare(lastUpdated, 30)) {
                     return todoItems;
@@ -169,8 +190,8 @@ class TeamworkProjectsApi {
                     console.log(error);
                 });
                 todo = json.data["todo-item"];
-                context.globalState.update("twp.data.task." + id + ".lastUpdated", Date.now());
-                context.globalState.update("twp.data.task." + id, todo);
+                yield context.globalState.update("twp.data.task." + id + ".lastUpdated", Date.now());
+                yield context.globalState.update("twp.data.task." + id, todo);
             }
             var dateFormat = require('dateformat');
             todo['created-on'] = dateFormat(Date.parse(todo['created-on']), "ddd-mm-yyyy");
