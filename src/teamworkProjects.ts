@@ -37,6 +37,7 @@ export class TeamworkProjects{
         this._context = context;
         this.context = context;
         this._extensionPath = extensionPath;
+        this.ActiveAccount = context.globalState.get("twp.data.activeAccount");
         this.API = new TeamworkProjectsApi(this._context, this);
         this.WebViews = new WebViews(this._context, this._extensionPath, this.API);
     }
