@@ -101,9 +101,20 @@ export class WebViews{
     public async GetWebViewContentAdaptiveCard(taskItem: number, force: boolean = false)  {
         var todo = await this.API.getTodoItem(this._context, taskItem,force);
         if(todo){
-            const templateFile = require(path.join(this._extensionPath, 'media/cards', 'taskCard.json'));
-            var  _templatePayload: object = templateFile;
 
+            const templateFile = require(path.join(this._extensionPath, 'media/cards', 'taskCard.json'));
+            
+            // let axios = require("axios");
+            // let result = await axios({
+            //     method:'get',
+            //     url: "https://adaptiveapi.azurewebsites.net/card/cardtemplate/3",
+            // })
+            // .catch(function (error) {
+            //     console.log(error);
+           // });
+            
+           //  var  _templatePayload: object = result.data;
+           var  _templatePayload: object = templateFile;
 
              let template = new Template( _templatePayload);
              let context = new EvaluationContext();
