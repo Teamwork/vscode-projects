@@ -11,6 +11,8 @@ import { TaskItemNode } from './model/nodes/TaskItemNode';
 export async function activate(context: vscode.ExtensionContext) {
 	
 	const twp = new TeamworkProjects(context,context.extensionPath);
+	twp.ActiveAccount = context.globalState.get("twp.data.activeAccount");
+
 	const taskProvider = new TaskProvider(context,twp);
 	vscode.window.registerTreeDataProvider('taskOutline', taskProvider);
 

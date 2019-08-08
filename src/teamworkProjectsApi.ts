@@ -20,13 +20,10 @@ export class TeamworkProjectsApi{
 
     constructor(context: vscode.ExtensionContext, teamwork: TeamworkProjects) {
         this.twp = teamwork;
-        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
-        let tempUserData = this.twp.ActiveAccount;
+        let userData : TeamworkAccount = this.twp.ActiveAccount;
 
-
-        if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
-        || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
-            userData = tempUserData;
+        if(isNullOrUndefined(userData)){
+            return;
         }
 
         let token: string;
@@ -60,19 +57,11 @@ export class TeamworkProjectsApi{
 
     public async GetProjects(context: vscode.ExtensionContext, force: boolean = false, includePeople: boolean= false, getAll: boolean = false, getList: string = "") : Promise<Project[]>{
        
-        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
-        let tempUserData = this.twp.ActiveAccount;
-        
-        if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
-        || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
-            userData = tempUserData;
-        }
+        let userData : TeamworkAccount = this.twp.ActiveAccount;
 
         if(!isNullOrUndefined(userData)){
             this.isConfigured = true;
         }
-
-
 
         if(!this.isConfigured){
             vscode.window.showErrorMessage("Please Configure the extension first!"); 
@@ -156,6 +145,7 @@ export class TeamworkProjectsApi{
         })
         .catch(function (error) {
             console.log(error);
+            return new TodoList[0];
         });
     
     

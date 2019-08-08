@@ -1,4 +1,7 @@
 # Change Log
+## 1.0.8
+- Added a workaround for multiple VSCode windows and VSCode globalStorage cache causing login problems
+
 ## 1.0.7
 - fixed an issue for EU accounts
 - fixed a login issue

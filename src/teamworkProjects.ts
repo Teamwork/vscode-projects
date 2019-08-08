@@ -197,7 +197,7 @@ export class TeamworkProjects{
 
                 var newTask = await this.API.postTodoItem(this._context,parseInt(this.Config.ActiveProjectId),parseInt(taskList.id),result,taskDescription);
 
-                let userData : TeamworkAccount = this._context.globalState.get("twp.data.activeAccount");
+                let userData : TeamworkAccount = this.ActiveAccount;
                 let root = userData.rootUrl;
 
                 if(!isNullOrUndefined(newTask)){
@@ -228,13 +228,7 @@ export class TeamworkProjects{
 
     public async RefreshData(){
 
-        let userData : TeamworkAccount = this.context.globalState.get("twp.data.activeAccount");
-        let tempUserData = this.ActiveAccount;
-        
-        if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
-        || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
-            userData = tempUserData;
-        }
+        let userData : TeamworkAccount = this.ActiveAccount;
 
         if(isNullOrUndefined(userData)){
             return;
@@ -334,14 +328,7 @@ export class TeamworkProjects{
     public async GetProjectForRepository(): Promise<ProjectConfig>{
         try{
 
-            let userData : TeamworkAccount = this.context.globalState.get("twp.data.activeAccount");
-            let tempUserData = this.ActiveAccount;
-        
-            if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
-            || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
-                userData = tempUserData;
-            }
-
+            let userData : TeamworkAccount = this.ActiveAccount;
 
             if(isNullOrUndefined(userData)){
                 return;
@@ -360,14 +347,14 @@ export class TeamworkProjects{
                 config = JSON.parse(fs.readFileSync(path, 'utf8'));
                 if(config){
                     if(config.Projects.length > 0){
-                        for(let i = config.Projects.length; i <= 0; i--){
-                            let element = config.Projects[i];
-                            if(!isNullOrUndefined(element.Installation) && element.Installation !== userData.installationId){
-                                config.Projects.splice(i,1);
-                            }                    
-                        }
-                        
-                        return config;
+
+                        config.Projects.forEach(function(prj){
+                            if(!isNullOrUndefined(prj.Installation) && prj.Installation !== userData.installationId){
+                                prj.Name = prj.Name + " (N/A)";
+                            }    
+                        });
+
+                           return config;
                     }else{
                         return new ProjectConfig(null);
                     }
@@ -390,14 +377,11 @@ export class TeamworkProjects{
     }
 
     public async FinishLogin(context: vscode.ExtensionContext, code: string) : Promise<TeamworkAccount>{
-        this.API = new TeamworkProjectsApi(this._context, this);
         var userData = await this.API.getLoginData(context,code);
         await context.globalState.update("twp.data.activeAccount",null);
         await context.globalState.update("twp.data.activeAccount", userData);
-        //Task: switch all account references in code to use variable instead of globalState
-        //Link: https://digitalcrew.teamwork.com//tasks/14849632
-        //Assigned To: Tim Cadenbach
         this.ActiveAccount = userData;
+        this.API = new TeamworkProjectsApi(this._context, this);
         this.RefreshData();
         vscode.window.showInformationMessage("You are now logged in as: " + userData.userEmail + "( " + userData.rootUrl + " )");
         
@@ -405,13 +389,7 @@ export class TeamworkProjects{
     }
     public async SelectProject() : Promise<ProjectConfig>{
 
-        let userData : TeamworkAccount = this.context.globalState.get("twp.data.activeAccount");
-        let tempUserData = this.ActiveAccount;
-        
-        if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
-        || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
-            userData = tempUserData;
-        }
+        let userData : TeamworkAccount = this.ActiveAccount;
         
         if(isNullOrUndefined(userData)){
             this.SelectAccount();
@@ -493,8 +471,13 @@ export class TeamworkProjects{
 
  
     public async UpdateStatusBarText(text: string){
-        let userData : TeamworkAccount = this._context.globalState.get("twp.data.activeAccount");
-        this.statusBarItem.text = "Teamwork: " + text + ", " + userData.userEmail;
+        let userData : TeamworkAccount = this.ActiveAccount;
+        if(isNullOrUndefined(userData)){
+            this.statusBarItem.text = "Teamwork: " + text + ", not logged in"; 
+        }else{
+            this.statusBarItem.text = "Teamwork: " + text + ", " + userData.userEmail;
+        }
+
     }
 
     public async getTaskLists(context: vscode.ExtensionContext,parentNode: ProjectNode, id: number = 0, force: boolean = false) : Promise<INode[]>{
@@ -527,7 +510,7 @@ export class TeamworkProjects{
         var config = vscode.workspace.getConfiguration('twp');
         var onlySelf = config.get("OnlySelfAssigned");
         var showUnassigned = config.get("showUnAssigned");
-        let userData : TeamworkAccount = this._context.globalState.get("twp.data.activeAccount");
+        let userData : TeamworkAccount = this.ActiveAccount;
         let userId = userData.userId;
 
         for(let i = 0; i < todoItems.length; i++){

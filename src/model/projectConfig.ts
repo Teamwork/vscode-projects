@@ -38,7 +38,7 @@ export class ProjectConfig{
 }
 
 export class ProjectConfigEntry{
-    public readonly Name: string;
+    public Name: string;
     public readonly Id: number;
     public readonly Project: Project;
     public readonly Installation: number;
