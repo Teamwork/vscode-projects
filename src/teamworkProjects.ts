@@ -177,9 +177,9 @@ export class TeamworkProjects{
     
                 let gitLink = "";
                 let gitBranch = "";
-                const gitExtensionExports = vscode.extensions.getExtension('vscode.git').exports;
-                if(gitExtensionExports){
-                    const gitExtension = gitExtensionExports.exports;
+                const gitExtensionExports = vscode.extensions.getExtension('vscode.git');
+                if(gitExtensionExports && !isNullOrUndefined(gitExtensionExports) ){
+                    const gitExtension = vscode.extensions.getExtension('vscode.git').exports;
                     const api = gitExtension.getAPI(1);
                     if(api && api.repositories.length > 0){
                         let repo = api.repositories[0];
