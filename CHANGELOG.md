@@ -1,5 +1,9 @@
 # Change Log
 ## 1.0.9
+- Fixed an issue with creating tasks in non code files
+- Fixed an issue where login credentials where not stored
+
+## 1.0.9
 - Fixed an issue with creating tasks without the Github Extension installed. 
 
 ## 1.0.8
