@@ -177,8 +177,8 @@ export class TeamworkProjects{
     
                 let gitLink = "";
                 let gitBranch = "";
-                const gitExtensionExports = vscode.extensions.getExtension('vscode.git');
-                if(gitExtensionExports && !isNullOrUndefined(gitExtensionExports) ){
+                const gitExtension = vscode.extensions.getExtension('vscode.git');
+                if( !isNullOrUndefined(gitExtension) ){
                     const gitExtension = vscode.extensions.getExtension('vscode.git').exports;
                     const api = gitExtension.getAPI(1);
                     if(api && api.repositories.length > 0){
@@ -186,13 +186,14 @@ export class TeamworkProjects{
                         let remote = repo.state.remotes[0];
                         gitBranch = repo.state.HEAD.name;
                         gitLink = remote.fetchUrl.replace(".git","") + "/blob/" + gitBranch + fileName + "#L" + line;
+                        gitLink = gitLink.replace("ssh://git@","https://www");
                     }
                  }
                  let taskDescription = "Task added from VSCode: \n";
                 taskDescription += "File: " + fileName + "\n";
                 taskDescription += "Line: " + line + "\n";
-                if(gitBranch.length > 0) {taskDescription += "Branch:" + gitBranch + "\n";}
-                if(gitLink.length > 0) {taskDescription += "Link:" + gitLink + "\n";}
+                if(gitBranch.length > 1) {taskDescription += "Branch:" + gitBranch + "\n";}
+                if(gitLink.length > 1) {taskDescription += "Link:" + gitLink + "\n";}
                 taskDescription += "Selection: " + "\n";
                 taskDescription += text;
 
@@ -206,14 +207,15 @@ export class TeamworkProjects{
                     var taskDetails = await this.API.getTodoItem(this._context,parseInt(id),true);
 
                     var langConfig = Utilities.GetActiveLanguageConfig();
-                    //Task: Need to find a workaround for files without a comment symbol configured in VSCode
-                    //Link: https://digitalcrew.teamwork.com//tasks/14804255
-                    //Assigned To: Tim Cadenbach
-                    var commentWrapper = langConfig.comments.lineComment;
+                    var commentWrapper = "-";
+                    if(!isNullOrUndefined(langConfig)){
+                        //Task: Need to find a workaround for files without a comment symbol configured in VSCode
+                        //Link: https://digitalcrew.teamwork.com//tasks/14804255
+                        //Assigned To: Tim Cadenbach
+                        commentWrapper = isNullOrUndefined(langConfig.comments.lineComment) ? "-" : langConfig.comments.lineComment;
+                    }
                     var content = taskDetails.content;
                     var responsible = taskDetails["responsible-party-names"];
-
-
                     editor.edit(edit => {
                         edit.setEndOfLine(vscode.EndOfLine.CRLF);
                         edit.insert(new vscode.Position(line, cursor), commentWrapper + "Task: " + content + "\r\n");
@@ -230,6 +232,7 @@ export class TeamworkProjects{
     public async RefreshData(){
 
         let userData : TeamworkAccount = this.ActiveAccount;
+        this.API = new TeamworkProjectsApi(this.context, this);
 
         if(isNullOrUndefined(userData)){
             return;
@@ -245,15 +248,17 @@ export class TeamworkProjects{
         if(this.Config.Projects !== null){
             this.Config.Projects.forEach(async element =>{
 
-                this.UpdateStatusBarText("Teamwork: Refreshing TaskLists");
-                element.Project.TodoLists = await this.API.getTaskLists(this._context,element.Id,true);
-                
-                this.UpdateStatusBarText("Teamwork: Refreshing TodoItems");
-                element.Project.TodoLists.forEach(async subelement =>{
-                    subelement.TodoItems = await this.API.getTaskItems(this._context,parseInt(subelement.id),true);
-                });
-                this.UpdateStatusBarText(this.Config.ActiveProjectName);
+                if(element.Name.indexOf("(N/A)") === 0) {  
+                    this.UpdateStatusBarText("Teamwork: Refreshing TaskLists");
+                    element.Project.TodoLists = await this.API.getTaskLists(this._context,element.Id,true);
+                    
+                    this.UpdateStatusBarText("Teamwork: Refreshing TodoItems");
+                    element.Project.TodoLists.forEach(async subelement =>{
+                        subelement.TodoItems = await this.API.getTaskItems(this._context,parseInt(subelement.id),true);
+                    });
+                }
             });
+            this.UpdateStatusBarText(this.Config.ActiveProjectName);
         }
         this.IsLoading = false;
 
@@ -279,8 +284,8 @@ export class TeamworkProjects{
             nodeList.push(item);
         });
 
-        this._context.globalState.update("twp.data.projects",this.Projects );       
-        this._context.globalState.update("twp.data.projects.lastUpdated",Date.now());
+        this._context.workspaceState.update("twp.data.projects",this.Projects );       
+        this._context.workspaceState.update("twp.data.projects.lastUpdated",Date.now());
         return nodeList;
     }
 
@@ -352,7 +357,9 @@ export class TeamworkProjects{
                         config.Projects.forEach(function(prj){
                             if(!isNullOrUndefined(prj.Installation) && prj.Installation !== userData.installationId){
                                 prj.Name = prj.Name + " (N/A)";
-                            }    
+                            } else {
+                                prj.Name = prj.Name.replace(" (N/A)","");
+                            }
                         });
 
                            return config;
@@ -379,7 +386,6 @@ export class TeamworkProjects{
 
     public async FinishLogin(context: vscode.ExtensionContext, code: string) : Promise<TeamworkAccount>{
         var userData = await this.API.getLoginData(context,code);
-        await context.globalState.update("twp.data.activeAccount",null);
         await context.globalState.update("twp.data.activeAccount", userData);
         this.ActiveAccount = userData;
         this.API = new TeamworkProjectsApi(this._context, this);
