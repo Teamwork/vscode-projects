@@ -1,4 +1,7 @@
 # Change Log
+## 1.0.12
+ - Workaround for VSCode GlobalState not always updating. 
+
 ## 1.0.9
 - Fixed an issue with creating tasks in non code files
 - Fixed an issue where login credentials where not stored

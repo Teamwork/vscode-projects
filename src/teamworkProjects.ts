@@ -37,7 +37,17 @@ export class TeamworkProjects{
         this._context = context;
         this.context = context;
         this._extensionPath = extensionPath;
-        this.ActiveAccount = context.globalState.get("twp.data.activeAccount");
+
+        var account : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
+        var wspAccount : TeamworkAccount = context.workspaceState.get("twp.data.activeAccount");
+
+        if(!isNullOrUndefined(account) && ( !isNullOrUndefined(wspAccount) && account.installationId !== wspAccount.installationId ) ){
+            this.ActiveAccount = wspAccount;
+        }else{
+            this.ActiveAccount = account;
+        }
+
+
         this.API = new TeamworkProjectsApi(this._context, this);
         this.WebViews = new WebViews(this._context, this._extensionPath, this.API);
     }
@@ -186,7 +196,7 @@ export class TeamworkProjects{
                         let remote = repo.state.remotes[0];
                         gitBranch = repo.state.HEAD.name;
                         gitLink = remote.fetchUrl.replace(".git","") + "/blob/" + gitBranch + fileName + "#L" + line;
-                        gitLink = gitLink.replace("ssh://git@","https://www");
+                        gitLink = gitLink.replace("ssh://git@","https://");
                     }
                  }
                  let taskDescription = "Task added from VSCode: \n";
@@ -394,13 +404,19 @@ export class TeamworkProjects{
 
     public async FinishLogin(context: vscode.ExtensionContext, code: string) : Promise<TeamworkAccount>{
         var userData = await this.API.getLoginData(context,code);
-        await context.workspaceState.update("twp.data.activeAccount", null);
+        
+        await context.workspaceState.update("twp.data.activeAccount", undefined);
         await context.workspaceState.update("twp.data.activeAccount", userData);
+
+        await context.globalState.update("twp.data.activeAccount", undefined).then(async function () {
+            await context.globalState.update("twp.data.activeAccount", userData);
+        });
+        
         this.ActiveAccount = userData;
         this.API = new TeamworkProjectsApi(this._context, this);
         this.RefreshData();
         vscode.window.showInformationMessage("You are now logged in as: " + userData.userEmail + "( " + userData.rootUrl + " )");
-        
+
         return null;
     }
     public async SelectProject() : Promise<ProjectConfig>{
