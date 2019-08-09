@@ -231,36 +231,44 @@ export class TeamworkProjects{
 
     public async RefreshData(){
 
-        let userData : TeamworkAccount = this.ActiveAccount;
-        this.API = new TeamworkProjectsApi(this.context, this);
+        try {
+            let userData : TeamworkAccount = this.ActiveAccount;
+            this.API = new TeamworkProjectsApi(this.context, this);
 
-        if(isNullOrUndefined(userData)){
-            return;
+            if(isNullOrUndefined(userData)){
+                return;
+            }
+
+            this.IsLoading = true;
+
+            this.UpdateStatusBarText("Updating Projects");
+            if(this.Config === null) {
+                this.Config = await this.GetProjectForRepository();
+            }  
+
+            if(this.Config.Projects !== null){
+                this.Config.Projects.forEach(async element =>{
+
+                    if(element.Name.indexOf("(N/A)") === -1) {  
+                        this.UpdateStatusBarText("Teamwork: Refreshing TaskLists");
+                        element.Project.TodoLists = await this.API.getTaskLists(this._context,element.Id,true);
+                        
+                        this.UpdateStatusBarText("Teamwork: Refreshing TodoItems");
+                        element.Project.TodoLists.forEach(async subelement =>{
+                            subelement.TodoItems = await this.API.getTaskItems(this._context,parseInt(subelement.id),true);
+                        });
+                    }
+                });
+            }
+            if(!isNullOrUndefined(this.Config.ActiveProjectName)){
+                this.UpdateStatusBarText(this.Config.ActiveProjectName);
+            }        
+        } catch (error) {
+            this.IsLoading = false;       
         }
 
-        this.IsLoading = true;
-
-        this.UpdateStatusBarText("Updating Projects");
-        if(this.Config === null) {
-            this.Config = await this.GetProjectForRepository();
-        }  
-
-        if(this.Config.Projects !== null){
-            this.Config.Projects.forEach(async element =>{
-
-                if(element.Name.indexOf("(N/A)") === 0) {  
-                    this.UpdateStatusBarText("Teamwork: Refreshing TaskLists");
-                    element.Project.TodoLists = await this.API.getTaskLists(this._context,element.Id,true);
-                    
-                    this.UpdateStatusBarText("Teamwork: Refreshing TodoItems");
-                    element.Project.TodoLists.forEach(async subelement =>{
-                        subelement.TodoItems = await this.API.getTaskItems(this._context,parseInt(subelement.id),true);
-                    });
-                }
-            });
-            this.UpdateStatusBarText(this.Config.ActiveProjectName);
-        }
-        this.IsLoading = false;
+        
+  
 
     }
 
@@ -386,7 +394,8 @@ export class TeamworkProjects{
 
     public async FinishLogin(context: vscode.ExtensionContext, code: string) : Promise<TeamworkAccount>{
         var userData = await this.API.getLoginData(context,code);
-        await context.globalState.update("twp.data.activeAccount", userData);
+        await context.workspaceState.update("twp.data.activeAccount", null);
+        await context.workspaceState.update("twp.data.activeAccount", userData);
         this.ActiveAccount = userData;
         this.API = new TeamworkProjectsApi(this._context, this);
         this.RefreshData();
