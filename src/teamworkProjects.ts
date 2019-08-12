@@ -187,19 +187,24 @@ export class TeamworkProjects{
     
                 let gitLink = "";
                 let gitBranch = "";
-                const gitExtension = vscode.extensions.getExtension('vscode.git');
-                if( !isNullOrUndefined(gitExtension) ){
-                    const gitExtension = vscode.extensions.getExtension('vscode.git').exports;
-                    const api = gitExtension.getAPI(1);
-                    if(api && api.repositories.length > 0){
-                        let repo = api.repositories[0];
-                        let remote = repo.state.remotes[0];
-                        gitBranch = repo.state.HEAD.name;
-                        gitLink = remote.fetchUrl.replace(".git","") + "/blob/" + gitBranch + fileName + "#L" + line;
-                        gitLink = gitLink.replace("ssh://git@","https://");
-                    }
-                 }
-                 let taskDescription = "Task added from VSCode: \n";
+                try{
+                    const gitExtension = vscode.extensions.getExtension('vscode.git');
+                    if( !isNullOrUndefined(gitExtension) ){
+                        const gitExtension = vscode.extensions.getExtension('vscode.git').exports;
+                        const api = gitExtension.getAPI(1);
+                        if(api && api.repositories.length > 0){
+                            let repo = api.repositories[0];
+                            let remote = repo.state.remotes[0];
+                            gitBranch = repo.state.HEAD.name;
+                            gitLink = remote.fetchUrl.replace(".git","") + "/blob/" + gitBranch + fileName + "#L" + line;
+                            gitLink = gitLink.replace("ssh://git@","https://");
+                        }
+                     }
+                }catch(exception){
+
+                }
+
+                let taskDescription = "Task added from VSCode: \n";
                 taskDescription += "File: " + fileName + "\n";
                 taskDescription += "Line: " + line + "\n";
                 if(gitBranch.length > 1) {taskDescription += "Branch:" + gitBranch + "\n";}
@@ -226,6 +231,7 @@ export class TeamworkProjects{
                     }
                     var content = taskDetails.content;
                     var responsible = taskDetails["responsible-party-names"];
+                    if(isNullOrUndefined(responsible)) { responsible = "anyone"; }
                     editor.edit(edit => {
                         edit.setEndOfLine(vscode.EndOfLine.CRLF);
                         edit.insert(new vscode.Position(line, cursor), commentWrapper + "Task: " + content + "\r\n");

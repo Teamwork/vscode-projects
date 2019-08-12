@@ -1,4 +1,7 @@
 # Change Log
+## 1.0.13
+ - Fixed an issue with task creation that randomly occured
+
 ## 1.0.12
  - Workaround for VSCode GlobalState not always updating. 
 
