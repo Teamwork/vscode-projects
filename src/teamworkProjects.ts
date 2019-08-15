@@ -101,7 +101,16 @@ export class TeamworkProjects{
                             this.panel.webview.html = this.WebViews.GetWebViewContentLoader();
                             let complete = JSON.parse(data.complete);
                             let billable = JSON.parse(data.billable);
-                            this.CreateTimeEntry(data.taskId, data.hours, data.minutes, data.description, complete, billable);
+
+                            var hours = Number(data.hours);
+                            var minutes = Number(data.minutes);
+                            if( minutes > 59){
+                                vscode.window.showErrorMessage("You can not log more than 59 minutes, please use hours and minutes");
+                                this.panel.webview.html = await this.GetWebViewContent(taskItem.id);
+                                return;
+                            }
+
+                            this.CreateTimeEntry(data.taskId, hours, minutes, data.description, complete, billable);
                             return;
                     }
                 }
@@ -119,7 +128,7 @@ export class TeamworkProjects{
          this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
     }
 
-    public async CreateTimeEntry(taskItem: number, hours: string, minutes: string, description: string, complete: boolean, billable: boolean){
+    public async CreateTimeEntry(taskItem: number, hours: number, minutes: number, description: string, complete: boolean, billable: boolean){
         await this.API.AddTimeEntry(taskItem, hours, minutes, description, complete, billable);
         this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
    }

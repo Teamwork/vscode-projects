@@ -283,7 +283,7 @@ export class TeamworkProjectsApi{
     
             let totalHours = 0;
             let totalMinutes = 0;
-            let estimated = await this.timeConvert(Number(todo["estimated-minutes"]));
+            let estimated = await this.timeConvert(todo["estimated-minutes"]);
             todo["estimated"] = estimated;
             
             timeEntries.data.timeEntries.forEach(element => {
@@ -388,12 +388,12 @@ export class TeamworkProjectsApi{
     }
 
 
-    public async AddTimeEntry(taskItem: number, hours: string, minutes: string, description: string, complete: boolean, billable: boolean) : Promise<boolean>{
+    public async AddTimeEntry(taskItem: number, hours: number, minutes: number, description: string, complete: boolean, billable: boolean) : Promise<boolean>{
         if(!this.isConfigured){
             vscode.window.showErrorMessage("Please Configure the extension first!"); 
             return; 
         }  
-        const url = this.root + '/tasks/' + taskItem + '/time-entries.json';
+        const url = this.root + 'tasks/' + taskItem + '/time_entries.json';
 
         let userData : TeamworkAccount = this.twp.ActiveAccount;
         let userId = userData.userId;
@@ -401,27 +401,29 @@ export class TeamworkProjectsApi{
         var dateFormat = require('dateformat');
 
         let start = new Date();
-        start.setHours(start.getHours() - Number(hours));
-        start.setMinutes(start.getMinutes() - Number(minutes));
+        start.setHours(start.getHours() - hours);
+        start.setMinutes(start.getMinutes() - minutes);
 
-        var timeentry = {                
+        var timeentry = {
             "time-entry": {
                 "date": dateFormat(start,"yyyymmdd"),
                 "time": dateFormat(start,"HH:MM"),
                 "description": description,
-                "hours":  Number(hours),
-                "minutes":  Number(minutes),
+                "hours":  hours,
+                "minutes":  minutes,
                 "isBillable": billable,
                 "markTaskComplete": complete,
-                "person-id": userId,
-                "tags": "",
-                "todo-item-id": taskItem
-            }};
+                "person-id": userId.toString()
+            }
+         };
 
         let json = await this.axios({
             method: 'post',
             url: url,
-            data: timeentry
+            data: timeentry,
+            headers: {
+                "Content-Type": "application/json",
+             }
           })
         .catch(function (error) {
             console.log(timeentry);

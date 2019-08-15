@@ -1,7 +1,7 @@
 {
 	"name": "twp",
 	"displayName": "Teamwork Projects",
-	"description": "Teamwork Projects extension for VSCode lets you link projects to your workspace and browse Teamwork Projects tasks.",
+	"description": "The Teamwork Projects and Visual Studio Code Editor extension allows you to manage your projects and tasks directly from within Visual Studio Code so you can get more work done from one place. ",
 	"publisher": "teamwork",
 	"homepage": "https://www.teamwork.com",
 	"bugs": {
@@ -25,7 +25,7 @@
 			"url": "https://twitter.com/Teamwork"
 		}
 	],
-	"version": "1.0.13",
+	"version": "1.0.14",
 	"engines": {
 		"vscode": "^1.33.0"
 	},

@@ -1,4 +1,9 @@
 # Change Log
+## 1.0.14
+ - Tasks now show Logged Time
+ - Can now log time on tasks
+ - To use Time Logging make sure the option "enabletimeTracking" is on in config
+
 ## 1.0.13
  - Fixed an issue with task creation that randomly occured
 
