@@ -264,6 +264,39 @@ export class TeamworkProjectsApi{
             todo["attachments"] = comments.data.files;
         }
 
+        var config = vscode.workspace.getConfiguration('twp');
+        var timeTracking = config.get("enabletimeTracking");
+
+        todo["timeIsLogged"] = Number(todo["timeIsLogged"]);
+        if(todo["timeIsLogged"] === 1 && timeTracking){
+            const timeEntryUrl = this.root + '/projects/api/v2/tasks/' + id + '/time_entries.json?getTotals=true&includeSubTasks=1&page=1&pageSize=250';
+            let timeEntries = await this.axios({
+                method:'get',
+                url: timeEntryUrl,
+                headers: {
+                   "Content-Type": "application/json",
+                },
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    
+            let totalHours = 0;
+            let totalMinutes = 0;
+            let estimated = await this.timeConvert(Number(todo["estimated-minutes"]));
+            todo["estimated"] = estimated;
+            
+            timeEntries.data.timeEntries.forEach(element => {
+                element["date"] = dateFormat(Date.parse(element["date"]), "ddd-mm-yyyy HH:MM");
+                totalHours += element["hours"];
+                totalMinutes += element["minutes"];
+            });
+            let total = await this.timeConvert(totalHours * 60 + totalMinutes);
+            todo["total"] = total;
+            todo["timeEntries"] = timeEntries.data.timeEntries;
+
+        }
+
         todo["rooturl"] = this.root;
         todo.rooturl = this.root;
         context.globalState.update("twp.data.task." + id + ".lastUpdated", Date.now());
@@ -355,6 +388,41 @@ export class TeamworkProjectsApi{
     }
 
 
+    public async AddTimeEntry(taskItem: number, hours: string, minutes: string) : Promise<boolean>{
+        if(!this.isConfigured){
+            vscode.window.showErrorMessage("Please Configure the extension first!"); 
+            return; 
+        }  
+        const url = this.root + '/tasks/' + taskItem + '/time-entries.json';
+
+        let userData : TeamworkAccount = this.twp.ActiveAccount;
+        let userId = userData.userId;
+
+        var comment = {                
+            "time-entry": {
+                "date": "",
+                "hours":  Number(hours),
+                "minutes":  Number(minutes),
+                "isBillable": false,
+                "markTaskComplete": false,
+                "person-id": userId,
+                "tags": "",
+                "todo-item-id": taskItem
+            }};
+
+        let json = await this.axios({
+            method: 'post',
+            url: url,
+            data: comment
+          })
+        .catch(function (error) {
+            console.log(comment);
+            console.log(error);
+            return false;
+        });
+        return true;
+    }
+
     public async getLoginData(context: vscode.ExtensionContext, code: string): Promise<TeamworkAccount> {
      
        
@@ -389,6 +457,16 @@ export class TeamworkProjectsApi{
             loginData.installation.apiEndPoint,);
 
         return user;
+    }
+
+
+    public async timeConvert(n) : Promise<string> {
+        var num = n;
+        var hours = (num / 60);
+        var rhours = Math.floor(hours);
+        var minutes = (hours - rhours) * 60;
+        var rminutes = Math.round(minutes);
+        return rhours + "h " + rminutes + "m";
     }
 
 }

@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {Template} from './adaptiveCards/templateEngine';
-import {EvaluationContext} from './adaptiveCards/expressionParser';
+import {Template} from 'adaptivecards-templating';
+import {EvaluationContext} from 'adaptivecards-templating';
 import { TeamworkProjectsApi } from './teamworkProjectsApi';
 
 
@@ -101,7 +101,12 @@ export class WebViews{
     public async GetWebViewContentAdaptiveCard(taskItem: number, force: boolean = false)  {
         var todo = await this.API.getTodoItem(this._context, taskItem,force);
         if(todo){
-            const templateFile = require(path.join(this._extensionPath, 'media/cards', 'taskCard.json'));
+        
+            var config = vscode.workspace.getConfiguration('twp');
+            var timeTracking = config.get("enabletimeTracking");
+            var taskCard = timeTracking ? 'taskCardWithTime.json' : 'taskCard.json';
+        
+            const templateFile = require(path.join(this._extensionPath, 'media/cards', taskCard));
             var  _templatePayload: object = templateFile;
 
 

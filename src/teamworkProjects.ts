@@ -1,8 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import {Template} from './adaptiveCards/templateEngine';
-import {EvaluationContext} from './adaptiveCards/expressionParser';
 import { TaskListNode } from './model/nodes/TaskListNode';
 import {TaskItemNode} from './model/nodes/TaskItemNode';
 import { ProjectListResponse, Project } from './model/responses/projectListResponse';
@@ -99,6 +97,10 @@ export class TeamworkProjects{
                             this.panel.webview.html = this.WebViews.GetWebViewContentLoader();
                             this.CompleteTask(data.taskId);
                             return;
+                        case 'time':
+                            this.panel.webview.html = this.WebViews.GetWebViewContentLoader();
+                            this.CreateTimeEntry(data.taskId, data.hours, data.minutes)
+                            return;
                     }
                 }
             );
@@ -114,6 +116,11 @@ export class TeamworkProjects{
          await this.API.AddComment(taskItem, content);
          this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
     }
+
+    public async CreateTimeEntry(taskItem: number, hours: string, minutes: string){
+        await this.API.AddTimeEntry(taskItem, hours, minutes);
+        this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
+   }
 
     public async CompleteTask(taskItem: number){
         
