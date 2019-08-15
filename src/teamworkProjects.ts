@@ -99,7 +99,9 @@ export class TeamworkProjects{
                             return;
                         case 'time':
                             this.panel.webview.html = this.WebViews.GetWebViewContentLoader();
-                            this.CreateTimeEntry(data.taskId, data.hours, data.minutes)
+                            let complete = JSON.parse(data.complete);
+                            let billable = JSON.parse(data.billable);
+                            this.CreateTimeEntry(data.taskId, data.hours, data.minutes, data.description, complete, billable);
                             return;
                     }
                 }
@@ -117,8 +119,8 @@ export class TeamworkProjects{
          this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
     }
 
-    public async CreateTimeEntry(taskItem: number, hours: string, minutes: string){
-        await this.API.AddTimeEntry(taskItem, hours, minutes);
+    public async CreateTimeEntry(taskItem: number, hours: string, minutes: string, description: string, complete: boolean, billable: boolean){
+        await this.API.AddTimeEntry(taskItem, hours, minutes, description, complete, billable);
         this.panel.webview.html = await this.GetWebViewContent(taskItem, true);
    }
 

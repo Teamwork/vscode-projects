@@ -388,7 +388,7 @@ export class TeamworkProjectsApi{
     }
 
 
-    public async AddTimeEntry(taskItem: number, hours: string, minutes: string) : Promise<boolean>{
+    public async AddTimeEntry(taskItem: number, hours: string, minutes: string, description: string, complete: boolean, billable: boolean) : Promise<boolean>{
         if(!this.isConfigured){
             vscode.window.showErrorMessage("Please Configure the extension first!"); 
             return; 
@@ -398,13 +398,21 @@ export class TeamworkProjectsApi{
         let userData : TeamworkAccount = this.twp.ActiveAccount;
         let userId = userData.userId;
 
-        var comment = {                
+        var dateFormat = require('dateformat');
+
+        let start = new Date();
+        start.setHours(start.getHours() - Number(hours));
+        start.setMinutes(start.getMinutes() - Number(minutes));
+
+        var timeentry = {                
             "time-entry": {
-                "date": "",
+                "date": dateFormat(start,"yyyymmdd"),
+                "time": dateFormat(start,"HH:MM"),
+                "description": description,
                 "hours":  Number(hours),
                 "minutes":  Number(minutes),
-                "isBillable": false,
-                "markTaskComplete": false,
+                "isBillable": billable,
+                "markTaskComplete": complete,
                 "person-id": userId,
                 "tags": "",
                 "todo-item-id": taskItem
@@ -413,10 +421,10 @@ export class TeamworkProjectsApi{
         let json = await this.axios({
             method: 'post',
             url: url,
-            data: comment
+            data: timeentry
           })
         .catch(function (error) {
-            console.log(comment);
+            console.log(timeentry);
             console.log(error);
             return false;
         });

@@ -446,7 +446,7 @@
                                         "items": [
                                             {
                                                 "type": "Input.Number",
-                                                "id": "hour",
+                                                "id": "hours",
                                                 "value": "0"
                                             }
                                         ]
@@ -458,7 +458,10 @@
                                             {
                                                 "type": "Input.Number",
                                                 "value": "0",
-                                                "id": "minutes"
+                                                "id": "minutes",
+                                                "validation": {
+                                                    "necessity": "Required"
+                                                }
                                             }
                                         ]
                                     },
@@ -472,7 +475,33 @@
                                     }
                                 ]
                             }
-                        ]
+                        ],
+                        "spacing": "None"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "Description"
+                    },
+                    {
+                        "type": "Input.Text",
+                        "title": "New Input.Toggle",
+                        "placeholder": "Description",
+                        "id": "description",
+                        "isMultiline": true
+                    },
+                    {
+                        "type": "Input.Toggle",
+                        "title": "Billable",
+                        "value": "false",
+                        "wrap": false,
+                        "id": "billable"
+                    },
+                    {
+                        "type": "Input.Toggle",
+                        "title": "Task is now complete",
+                        "value": "false",
+                        "wrap": false,
+                        "id": "complete"
                     }
                 ],
                 "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
