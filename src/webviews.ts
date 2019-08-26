@@ -3,7 +3,8 @@ import * as vscode from 'vscode';
 import {Template} from 'adaptivecards-templating';
 import {EvaluationContext} from 'adaptivecards-templating';
 import { TeamworkProjectsApi } from './teamworkProjectsApi';
-
+import TaskCard = require('./cards/taskCard.json');
+import TaskCardWithTime = require('./cards/taskCardWithTime.json');
 
 export class WebViews{
     private readonly _extensionPath: string;    
@@ -104,10 +105,7 @@ export class WebViews{
         
             var config = vscode.workspace.getConfiguration('twp');
             var timeTracking = config.get("enabletimeTracking");
-            var taskCard = timeTracking ? 'taskCardWithTime.json' : 'taskCard.json';
-        
-            const templateFile = require(path.join(this._extensionPath, 'media/cards', taskCard));
-            var  _templatePayload: object = templateFile;
+            var  _templatePayload: object = timeTracking ? TaskCardWithTime : TaskCard;
 
 
              let template = new Template( _templatePayload);
