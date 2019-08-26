@@ -1,4 +1,8 @@
 # Change Log
+## 1.0.15
+ - Added a direct link to the task when clicking on task title in preview card
+ - fixed a bug in time log preview
+
 ## 1.0.14
  - Tasks now show Logged Time
  - Can now log time on tasks

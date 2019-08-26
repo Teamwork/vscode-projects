@@ -4,7 +4,7 @@
         {
             "type": "Image",
             "url": "https://s3.amazonaws.com/tw-desk/i/1/doclogo/197378.20190228210102000.197378.20190228210102000rlycm.png",
-            "size": "Large"
+            "size": "large"
         },
         {
             "type": "Container",
@@ -26,7 +26,7 @@
                                     "size": "Medium",
                                     "weight": "Bolder",
                                     "wrap": true,
-                                    "text": "{$root.content}"
+                                    "text": "[{$root.content}]({$root.rooturl}/tasks/{$root.id})"
                                 },
                                 {
                                     "type": "FactSet",
