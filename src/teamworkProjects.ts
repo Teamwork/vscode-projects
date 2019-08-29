@@ -422,11 +422,26 @@ export class TeamworkProjects{
     }
 
     public async SelectAccount() : Promise<Boolean>{
-        vscode.env.openExternal(vscode.Uri.parse('https://www.teamwork.com/launchpad/login?state=VSCODE&redirect_uri=vscode://teamwork.twp/loginData'));
+
+        var isLinux = process.platform === "linux";
+        if ( !isLinux ){
+            vscode.env.openExternal(vscode.Uri.parse('https://www.teamwork.com/launchpad/login?state=VSCODE&redirect_uri=vscode://teamwork.twp/loginData'));
+        }else{
+            const result = await vscode.window.showInputBox({
+                value: '',
+                valueSelection: [2, 4],
+                placeHolder: 'https://<yourdomain>.teamwork.com',
+                validateInput: text => {
+                    return Utilities.IsValidUrl(text) ? text : null;
+                }
+            });
+
+        }
+        
         return true;
     }
 
-    public async FinishLogin(context: vscode.ExtensionContext, code: string) : Promise<TeamworkAccount>{
+    public async FinishLogin(context: vscode.ExtensionContext, code: string, isLinux: boolean = false) : Promise<TeamworkAccount>{
         var userData = await this.API.getLoginData(context,code);
         
         await context.workspaceState.update("twp.data.activeAccount", undefined);
