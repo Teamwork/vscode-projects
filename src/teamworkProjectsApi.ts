@@ -217,7 +217,7 @@ export class TeamworkProjectsApi{
         }
 
         var dateFormat = require('dateformat');
-        todo['created-on'] = dateFormat(Date.parse(todo['created-on']), "ddd-mm-yyyy");
+        todo['created-on'] = dateFormat(Date.parse(todo['created-on']), "dd-MM-yyyy");
         todo['description'] = todo['description'].replace('\'','´');
         todo['content'] = todo['content'].replace('\'','´');
 
@@ -242,7 +242,7 @@ export class TeamworkProjectsApi{
                 var newBody = turndownService.turndown(element['html-body']);
                 newBody = newBody.replace('\'','´');
                 element.body = newBody;
-                element["datewritten"] = dateFormat(Date.parse(element.datetime), "ddd-mm-yyyy hh:MM");
+                element["datewritten"] = dateFormat(Date.parse(element.datetime), "dd-MM-yyyy hh:mm");
             });
 
             todo["comments"] = comments.data.comments;
@@ -287,7 +287,7 @@ export class TeamworkProjectsApi{
             todo["estimated"] = estimated;
             
             timeEntries.data.timeEntries.forEach(element => {
-                element["date"] = dateFormat(Date.parse(element["date"]), "ddd-mm-yyyy HH:MM");
+                element["date"] = dateFormat(Date.parse(element["date"]), "dd-MM-yyyy hh:mm");
                 totalHours += element["hours"];
                 totalMinutes += element["minutes"];
             });
