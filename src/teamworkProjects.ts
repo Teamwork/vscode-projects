@@ -423,26 +423,40 @@ export class TeamworkProjects{
 
     public async SelectAccount() : Promise<Boolean>{
 
+        // We use a custom protocol for login vscode://xxx this does not work for Linux users
+        // Linux users get the old fashioned username+password login
         var isLinux = process.platform === "linux";
         if ( !isLinux ){
             vscode.env.openExternal(vscode.Uri.parse('https://www.teamwork.com/launchpad/login?state=VSCODE&redirect_uri=vscode://teamwork.twp/loginData'));
         }else{
-            const result = await vscode.window.showInputBox({
+            const url = await vscode.window.showInputBox({
                 value: '',
-                valueSelection: [2, 4],
                 placeHolder: 'https://<yourdomain>.teamwork.com',
                 validateInput: text => {
-                    return Utilities.IsValidUrl(text) ? text : null;
+                    return Utilities.IsValidUrl(text) ? undefined : text;
                 }
             });
-
+            if( !isNullOrUndefined(url)){
+                const ApiKey = await vscode.window.showInputBox({
+                    value: '',
+                    placeHolder: '<Your Legacy API Key'},);
+           
+                this.FinishLogin(this.context,"",true,url,ApiKey);
+            }
         }
         
         return true;
     }
 
-    public async FinishLogin(context: vscode.ExtensionContext, code: string, isLinux: boolean = false) : Promise<TeamworkAccount>{
-        var userData = await this.API.getLoginData(context,code);
+    public async FinishLogin(context: vscode.ExtensionContext, code: string, isLinux: boolean = false, root: string = "", apikey: string = "") : Promise<TeamworkAccount>{
+        
+        var userData: TeamworkAccount;
+        if( !isLinux ){
+            userData = await this.API.getLoginData(context,code);
+        }
+        else{
+            userData = await this.API.getLoginDataLegacy(context,root,apikey);  
+        }
         
         await context.workspaceState.update("twp.data.activeAccount", undefined);
         await context.workspaceState.update("twp.data.activeAccount", userData);

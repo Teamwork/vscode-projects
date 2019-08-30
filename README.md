@@ -12,6 +12,9 @@ This extension contributes the following settings:
 * `twp.showUnAssigned`      : Show tasks assigned to "anyone" (default yes)
 * `twp.enabletimeTracking`  : Enable logging time and view entries on tasks (default yes)
 
+## Linux users:
+* When you're using the add-in on Linux you need to use the old APIKey Login.
+* You get your APIKey from your user Profile in Teamwork Projects. 
 
 ## Notes:
 * Mac users -> When the extension isn't working after logging in, just restart VSCode

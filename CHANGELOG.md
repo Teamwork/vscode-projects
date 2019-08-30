@@ -1,4 +1,7 @@
 # Change Log
+##
+ - Fixed a login issue for Linux users
+ - Potential fix for -> [Issue: 2](https://github.com/Teamwork/vscode-projects/issues/2)
 ## 1.0.15
  - Added a direct link to the task when clicking on task title in preview card
  - fixed a bug in time log preview

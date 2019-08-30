@@ -42,10 +42,25 @@ export class TeamworkProjectsApi{
             } 
         }
  
+        if(userData.useApiKey){
+            this.axios.defaults.headers.common = {
+                'User-Agent': `tw-vscode (${process.platform} | ${vscode.extensions.getExtension('teamwork.twp').packageJSON.version})`
+            };
+            this.axios.auth =  {
+                username: token,
+                password: 'xxxxxxxxxxxxx'
+            };
+            this.axios.defaults.auth = {
+                username: token,
+                password: 'xxxxxxxxxxxxx'
+            };
+        }else{
+            this.axios.defaults.headers.common = {
+                'User-Agent': `tw-vscode (${process.platform} | ${vscode.extensions.getExtension('teamwork.twp').packageJSON.version})`,
+                'Authorization': `Bearer ${token}`};
+        }
 
-        this.axios.defaults.headers.common = {
-            'User-Agent': `tw-vscode (${process.platform} | ${vscode.extensions.getExtension('teamwork.twp').packageJSON.version})`,
-            'Authorization': `Bearer ${token}`};
+
 
         this.isConfigured = true;
     }
@@ -465,6 +480,60 @@ export class TeamworkProjectsApi{
             loginData.user.email,
             loginData["access_token"],
             loginData.installation.apiEndPoint,);
+
+        return user;
+    }
+
+    public async getLoginDataLegacy(context: vscode.ExtensionContext, root: string, apiKey: string): Promise<TeamworkAccount> {
+        
+        var loginaxios = require("axios");
+
+        let url = root + '/account.json';
+
+        let json = await loginaxios({
+            method:'get',
+            url,
+            auth: {
+                username: apiKey,
+                password: 'xxxxxxxxxxxxx'
+        }
+        })
+        .catch(function (error) {
+            console.log(error);
+            vscode.window.showErrorMessage("Getting details failed, are you sure your APIKey is correct?");
+            return null;
+        });
+
+        let loginData = json["data"];
+
+        let user = new TeamworkAccount(
+            loginData.account.id,
+            0,
+            "",
+            "",
+            apiKey,
+            root,true);
+        url = root + '/me.json',
+        json = await loginaxios({
+            method:'get',
+            url,
+            auth: {
+                username: apiKey,
+                password: 'xxxxxxxxxxxxx'
+        }
+        })
+        .catch(function (error) {
+            console.log(error);
+            vscode.window.showErrorMessage("Getting details failed, are you sure your APIKey is correct?");
+            return null;
+        });
+
+        let meData = json["data"];
+
+        user.userId = meData.person.id;
+        user.userName = meData.person["user-name"]
+
+
 
         return user;
     }
