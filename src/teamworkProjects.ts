@@ -222,9 +222,13 @@ export class TeamworkProjects{
 
                 }
 
+                // creates a reference ID that won't change; because line number do.
+                let reference = Math.random().toString(36).substring(2, 15);
+
                 let taskDescription = "Task added from VSCode: \n";
                 taskDescription += "File: " + fileName + "\n";
                 taskDescription += "Line: " + line + "\n";
+                taskDescription += "Ref: " + reference + "\n";
                 if(gitBranch.length > 1) {taskDescription += "Branch:" + gitBranch + "\n";}
                 if(gitLink.length > 1) {taskDescription += "Link:" + gitLink + "\n";}
                 taskDescription += "Selection: " + "\n";
@@ -253,6 +257,7 @@ export class TeamworkProjects{
                     editor.edit(edit => {
                         edit.setEndOfLine(vscode.EndOfLine.CRLF);
                         edit.insert(new vscode.Position(line, cursor), commentWrapper + "Task: " + content + "\r\n");
+                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Ref: " + reference + "\r\n");
                         edit.insert(new vscode.Position(line, cursor), commentWrapper + "Link: " + root + "tasks/" + id + "\r\n");
                         edit.insert(new vscode.Position(line, cursor), commentWrapper + "Assigned To: " + responsible + "\r\n"+ "\r\n");
                     });
