@@ -59,6 +59,11 @@
 						"type": "boolean",
 						"description": "Show native teamwork panel (false: uses adaptive card )"
 					},
+					"twp.ShowGitInfo": {
+						"default": true,
+						"type": "boolean",
+						"description": "Add git information to newly created tasks"
+					},
 					"twp.enabletimeTracking": {
 						"default": true,
 						"type": "boolean",
