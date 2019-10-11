@@ -205,7 +205,10 @@ export class TeamworkProjects{
     
                 let gitLink = "";
                 let gitBranch = "";
-                try{
+                var config = vscode.workspace.getConfiguration('twp');
+                var gitUse = config.get("ShowGitInfo");
+                if (gitUse) {
+                  try{
                     const gitExtension = vscode.extensions.getExtension('vscode.git');
                     if( !isNullOrUndefined(gitExtension) ){
                         const gitExtension = vscode.extensions.getExtension('vscode.git').exports;
@@ -218,8 +221,9 @@ export class TeamworkProjects{
                             gitLink = gitLink.replace("ssh://git@","https://");
                         }
                      }
-                }catch(exception){
+                  }catch(exception){
 
+                  }                  
                 }
 
                 // creates a reference ID that won't change; because line number do.
