@@ -5,6 +5,8 @@ import {EvaluationContext} from 'adaptivecards-templating';
 import { TeamworkProjectsApi } from './teamworkProjectsApi';
 import TaskCard = require('./cards/taskCard.json');
 import TaskCardWithTime = require('./cards/taskCardWithTime.json');
+import { stringify } from 'querystring';
+import { isNullOrUndefined } from 'util';
 
 export class WebViews{
     private readonly _extensionPath: string;    
@@ -103,32 +105,32 @@ export class WebViews{
         var todo = await this.API.getTodoItem(this._context, taskItem,force);
         if(todo){
 
-            const templateFile = require(path.join(this._extensionPath, 'media/cards', 'taskCard.json'));
-            
-            let axios = require("axios");
-            let result = await axios({
-                 method:'get',
-                 url: "https://templates.adaptivecards.io/teamwork.com/projects/task.json",
-            })
-            .catch(function (error) {
-                 console.log(error);
-           });
-            
-           var  _templatePayload: object = result.data;
-           //var  _templatePayload: object = templateFile;
+            if(isNullOrUndefined(this.API.cardTemplate)){
+                let axios = require("axios");
+                let result = await axios({
+                        method:'get',
+                        url: "https://templates.adaptivecards.io/teamwork.com/projects/task.json",
+                })
+                .catch(function (error) {
+                        console.log(error);
+                });
+                this.API.cardTemplate = result.data;
+            }
 
-             let template = new Template( _templatePayload);
-             let context = new EvaluationContext();
-             context.$root = todo;
-             let expandedTemplatePayload = template.expand(context);
+            var  _templatePayload: object = this.API.cardTemplate;
+    
+            let template = new Template( _templatePayload);
+            let context = new EvaluationContext();
+            context.$root = todo;
+            let expandedTemplatePayload = template.expand(context);
 
             // Local path to main script run in the webview
             const scriptPathOnDisk = vscode.Uri.file(
-                path.join(this._extensionPath, 'media/js', 'mainAdaptive.js')
+            path.join(this._extensionPath, 'media/js', 'mainAdaptive.js')
             );
             // And the uri we use to load this script in the webview
             const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
-            
+
             // jquery
             const jqueryPath = vscode.Uri.file(	path.join(this._extensionPath, 'media/js', 'jquery.min.js'));
             const jqueryUri = jqueryPath.with({ scheme: 'vscode-resource' });
@@ -138,7 +140,7 @@ export class WebViews{
             let url = vscode.Uri.file(	path.join(this._extensionPath, 'media/js', 'fabric.min.js'));
             const FabricUri = url.with({ scheme: 'vscode-resource' });
 
-             url = vscode.Uri.file(	path.join(this._extensionPath, 'media/js', 'adaptivecards.min.js'));
+            url = vscode.Uri.file(	path.join(this._extensionPath, 'media/js', 'adaptivecards.min.js'));
             const ACUri = url.with({ scheme: 'vscode-resource' });
 
             url = vscode.Uri.file(	path.join(this._extensionPath, 'media/js', 'adaptivecards-fabric.min.js'));
@@ -162,40 +164,40 @@ export class WebViews{
             const ACstyle = vscode.Uri.file(	path.join(this._extensionPath, 'media/css', 'editormain.css'));
             const ACStyleUri = ACstyle.with({ scheme: 'vscode-resource' });
 
-            
+
             const nonce = this.getNonce();
 
             return `<!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Cat Coding</title>
-                        <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Cat Coding</title>
+                <meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
 
-                        <link rel="stylesheet" href="${mainstyleUri}"  nonce="${nonce}"  type="text/css" />
-                        <link rel="stylesheet" href="${ACStyleUri}"  nonce="${nonce}"  type="text/css" />
-                        <link rel="stylesheet" href="${FabricStyleUri}"  nonce="${nonce}"  type="text/css" />
-                    </head>
-                    <body>
-                        <div id="exampleDiv"></div>
-                        <div id="out"></div>
-                        <script nonce="${nonce}" src="${jqueryUri}"></script>
-                        <script nonce="${nonce}" src="${ReactUri}"></script>
-                        <script nonce="${nonce}" src="${ReactDomUri}"></script>
-  
-                        <script nonce="${nonce}" src="${FabricUri}"></script>
-                        <script nonce="${nonce}" src="${ACUri}"></script>
-                        <script nonce="${nonce}" src="${ACUFabricUri}"></script>
-                        
+                <link rel="stylesheet" href="${mainstyleUri}"  nonce="${nonce}"  type="text/css" />
+                <link rel="stylesheet" href="${ACStyleUri}"  nonce="${nonce}"  type="text/css" />
+                <link rel="stylesheet" href="${FabricStyleUri}"  nonce="${nonce}"  type="text/css" />
+            </head>
+            <body>
+                <div id="exampleDiv"></div>
+                <div id="out"></div>
+                <script nonce="${nonce}" src="${jqueryUri}"></script>
+                <script nonce="${nonce}" src="${ReactUri}"></script>
+                <script nonce="${nonce}" src="${ReactDomUri}"></script>
 
-                        <script nonce="${nonce}" src="${MarkdownUri}"></script>
-                        <script nonce="${nonce}" src="${scriptUri}"></script>
-                        <div id="divData" style='display:none;'>
-                            ${JSON.stringify(expandedTemplatePayload)}
-                        </div>
-                    </body>
-                    </html>`;
+                <script nonce="${nonce}" src="${FabricUri}"></script>
+                <script nonce="${nonce}" src="${ACUri}"></script>
+                <script nonce="${nonce}" src="${ACUFabricUri}"></script>
+                
+
+                <script nonce="${nonce}" src="${MarkdownUri}"></script>
+                <script nonce="${nonce}" src="${scriptUri}"></script>
+                <div id="divData" style='display:none;'>
+                    ${JSON.stringify(expandedTemplatePayload)}
+                </div>
+            </body>
+            </html>`;
         }
     }
 

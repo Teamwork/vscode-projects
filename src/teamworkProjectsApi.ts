@@ -12,7 +12,7 @@ import { TeamworkProjects } from './teamworkProjects';
 
 export class TeamworkProjectsApi{
 
-
+    public cardTemplate:  object;
     private axios = require("axios");
     private isConfigured: boolean;
     private root: string;
