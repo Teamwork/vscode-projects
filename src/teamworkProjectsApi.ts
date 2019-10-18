@@ -20,13 +20,10 @@ export class TeamworkProjectsApi{
 
     constructor(context: vscode.ExtensionContext, teamwork: TeamworkProjects) {
         this.twp = teamwork;
-        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
-        let tempUserData = this.twp.ActiveAccount;
+        let userData : TeamworkAccount = this.twp.ActiveAccount;
 
-
-        if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
-        || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
-            userData = tempUserData;
+        if(isNullOrUndefined(userData)){
+            return;
         }
 
         let token: string;
@@ -45,10 +42,25 @@ export class TeamworkProjectsApi{
             } 
         }
  
+        if(userData.useApiKey){
+            this.axios.defaults.headers.common = {
+                'User-Agent': `tw-vscode (${process.platform} | ${vscode.extensions.getExtension('teamwork.twp').packageJSON.version})`
+            };
+            this.axios.auth =  {
+                username: token,
+                password: 'xxxxxxxxxxxxx'
+            };
+            this.axios.defaults.auth = {
+                username: token,
+                password: 'xxxxxxxxxxxxx'
+            };
+        }else{
+            this.axios.defaults.headers.common = {
+                'User-Agent': `tw-vscode (${process.platform} | ${vscode.extensions.getExtension('teamwork.twp').packageJSON.version})`,
+                'Authorization': `Bearer ${token}`};
+        }
 
-        this.axios.defaults.headers.common = {
-            'User-Agent': `tw-vscode (${process.platform} | ${vscode.extensions.getExtension('teamwork.twp').packageJSON.version})`,
-            'Authorization': `Bearer ${token}`};
+
 
         this.isConfigured = true;
     }
@@ -60,19 +72,11 @@ export class TeamworkProjectsApi{
 
     public async GetProjects(context: vscode.ExtensionContext, force: boolean = false, includePeople: boolean= false, getAll: boolean = false, getList: string = "") : Promise<Project[]>{
        
-        let userData : TeamworkAccount = context.globalState.get("twp.data.activeAccount");
-        let tempUserData = this.twp.ActiveAccount;
-        
-        if((isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData)) 
-        || (!isNullOrUndefined(userData) && !isNullOrUndefined(tempUserData) && userData.installationId !== tempUserData.installationId)){
-            userData = tempUserData;
-        }
+        let userData : TeamworkAccount = this.twp.ActiveAccount;
 
         if(!isNullOrUndefined(userData)){
             this.isConfigured = true;
         }
-
-
 
         if(!this.isConfigured){
             vscode.window.showErrorMessage("Please Configure the extension first!"); 
@@ -156,6 +160,7 @@ export class TeamworkProjectsApi{
         })
         .catch(function (error) {
             console.log(error);
+            return new TodoList[0];
         });
     
     
@@ -227,7 +232,7 @@ export class TeamworkProjectsApi{
         }
 
         var dateFormat = require('dateformat');
-        todo['created-on'] = dateFormat(Date.parse(todo['created-on']), "ddd-mm-yyyy");
+        todo['created-on'] = dateFormat(Date.parse(todo['created-on']), "dd-MM-yyyy");
         todo['description'] = todo['description'].replace('\'','´');
         todo['content'] = todo['content'].replace('\'','´');
 
@@ -252,7 +257,7 @@ export class TeamworkProjectsApi{
                 var newBody = turndownService.turndown(element['html-body']);
                 newBody = newBody.replace('\'','´');
                 element.body = newBody;
-                element["datewritten"] = dateFormat(Date.parse(element.datetime), "ddd-mm-yyyy hh:MM");
+                element["datewritten"] = dateFormat(Date.parse(element.datetime), "dd-MM-yyyy hh:mm");
             });
 
             todo["comments"] = comments.data.comments;
@@ -272,6 +277,39 @@ export class TeamworkProjectsApi{
             });
     
             todo["attachments"] = comments.data.files;
+        }
+
+        var config = vscode.workspace.getConfiguration('twp');
+        var timeTracking = config.get("enabletimeTracking");
+
+        todo["timeIsLogged"] = Number(todo["timeIsLogged"]);
+        if(todo["timeIsLogged"] === 1 && timeTracking){
+            const timeEntryUrl = this.root + '/projects/api/v2/tasks/' + id + '/time_entries.json?getTotals=true&includeSubTasks=1&page=1&pageSize=250';
+            let timeEntries = await this.axios({
+                method:'get',
+                url: timeEntryUrl,
+                headers: {
+                   "Content-Type": "application/json",
+                },
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    
+            let totalHours = 0;
+            let totalMinutes = 0;
+            let estimated = await this.timeConvert(todo["estimated-minutes"]);
+            todo["estimated"] = estimated;
+            
+            timeEntries.data.timeEntries.forEach(element => {
+                element["date"] = dateFormat(Date.parse(element["date"]), "dd-MM-yyyy hh:mm");
+                totalHours += element["hours"];
+                totalMinutes += element["minutes"];
+            });
+            let total = await this.timeConvert(totalHours * 60 + totalMinutes);
+            todo["total"] = total;
+            todo["timeEntries"] = timeEntries.data.timeEntries;
+
         }
 
         todo["rooturl"] = this.root;
@@ -365,6 +403,51 @@ export class TeamworkProjectsApi{
     }
 
 
+    public async AddTimeEntry(taskItem: number, hours: number, minutes: number, description: string, complete: boolean, billable: boolean) : Promise<boolean>{
+        if(!this.isConfigured){
+            vscode.window.showErrorMessage("Please Configure the extension first!"); 
+            return; 
+        }  
+        const url = this.root + 'tasks/' + taskItem + '/time_entries.json';
+
+        let userData : TeamworkAccount = this.twp.ActiveAccount;
+        let userId = userData.userId;
+
+        var dateFormat = require('dateformat');
+
+        let start = new Date();
+        start.setHours(start.getHours() - hours);
+        start.setMinutes(start.getMinutes() - minutes);
+
+        var timeentry = {
+            "time-entry": {
+                "date": dateFormat(start,"yyyymmdd"),
+                "time": dateFormat(start,"HH:MM"),
+                "description": description,
+                "hours":  hours,
+                "minutes":  minutes,
+                "isBillable": billable,
+                "markTaskComplete": complete,
+                "person-id": userId.toString()
+            }
+         };
+
+        let json = await this.axios({
+            method: 'post',
+            url: url,
+            data: timeentry,
+            headers: {
+                "Content-Type": "application/json",
+             }
+          })
+        .catch(function (error) {
+            console.log(timeentry);
+            console.log(error);
+            return false;
+        });
+        return true;
+    }
+
     public async getLoginData(context: vscode.ExtensionContext, code: string): Promise<TeamworkAccount> {
      
        
@@ -399,6 +482,70 @@ export class TeamworkProjectsApi{
             loginData.installation.apiEndPoint,);
 
         return user;
+    }
+
+    public async getLoginDataLegacy(context: vscode.ExtensionContext, root: string, apiKey: string): Promise<TeamworkAccount> {
+        
+        var loginaxios = require("axios");
+
+        let url = root + '/account.json';
+
+        let json = await loginaxios({
+            method:'get',
+            url,
+            auth: {
+                username: apiKey,
+                password: 'xxxxxxxxxxxxx'
+        }
+        })
+        .catch(function (error) {
+            console.log(error);
+            vscode.window.showErrorMessage("Getting details failed, are you sure your APIKey is correct?");
+            return null;
+        });
+
+        let loginData = json["data"];
+
+        let user = new TeamworkAccount(
+            loginData.account.id,
+            0,
+            "",
+            "",
+            apiKey,
+            root,true);
+        url = root + '/me.json',
+        json = await loginaxios({
+            method:'get',
+            url,
+            auth: {
+                username: apiKey,
+                password: 'xxxxxxxxxxxxx'
+        }
+        })
+        .catch(function (error) {
+            console.log(error);
+            vscode.window.showErrorMessage("Getting details failed, are you sure your APIKey is correct?");
+            return null;
+        });
+
+        let meData = json["data"];
+
+        user.userId = meData.person.id;
+        user.userName = meData.person["user-name"]
+
+
+
+        return user;
+    }
+
+
+    public async timeConvert(n) : Promise<string> {
+        var num = n;
+        var hours = (num / 60);
+        var rhours = Math.floor(hours);
+        var minutes = (hours - rhours) * 60;
+        var rminutes = Math.round(minutes);
+        return rhours + "h " + rminutes + "m";
     }
 
 }

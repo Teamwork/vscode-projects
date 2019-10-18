@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import * as URL from 'url';
+import { isNullOrUndefined } from 'util';
 
 export class Utilities{
 
@@ -18,7 +20,16 @@ export class Utilities{
         return false;
     }
 
-
+    public static IsValidUrl(url: string) : boolean {
+        try {
+            if(url.length < 3) { return false };
+            var urlparsed = URL.parse(url);
+            if( isNullOrUndefined(urlparsed.hostname)) { return false; }
+            return true;
+          } catch (err) {
+            return false;
+          }
+    }
 
     public static GetActiveLanguageConfig() : vscode.LanguageConfiguration{
         const editor = vscode.window.activeTextEditor;

@@ -1,5 +1,5 @@
 ## Features
-Browse Teamwork Projects directly from VSCode, Link a repository to as many Projects as you want. 
+The Teamwork Projects and Visual Studio Code Editor extension allows you to manage your projects and tasks directly from within Visual Studio Code so you can get more work done from one place. 
 
 ## Extension Settings
 
@@ -7,12 +7,21 @@ To use the Extension you must configure it first!
 
 This extension contributes the following settings:
 
-* `twp.ShowTeamworkPanel`: Use Teamwork Panel instead of AdaptiveCards for Preview, *Currently not working!
-* `twp.OnlySelfAssigned`: Only show your own tasks
-* `twp.showUnAssigned`: Show tasks assigned to "anyone" (default yes)
+* `twp.ShowTeamworkPanel`   : Use Teamwork Panel instead of AdaptiveCards for Preview, *Currently not working!
+* `twp.OnlySelfAssigned`    : Only show your own tasks
+* `twp.showUnAssigned`      : Show tasks assigned to "anyone" (default yes)
+* `twp.enabletimeTracking`  : Enable logging time and view entries on tasks (default yes)
+* `twp.ShowGitInfo`         : Add git information to newly created tasks (default yes)
 
+## Linux users:
+* When you're using the add-in on Linux you need to use the old APIKey Login.
+* You get your APIKey from your user Profile in Teamwork Projects. 
 
 ## Notes:
+* Mac users -> When the extension isn't working after logging in, just restart VSCode
 * to create a task you need to have an active project selected. 
 * the active project can be changed in the VSCode footer bar by clicking on the Teamwork button. 
 
+## Support: 
+* If you're having issues send a mail to support@teamwork.com
+* or create an issue on the repository

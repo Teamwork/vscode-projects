@@ -1,4 +1,32 @@
 # Change Log
+##
+ - Fixed a login issue for Linux users
+ - Potential fix for -> [Issue: 2](https://github.com/Teamwork/vscode-projects/issues/2)
+## 1.0.15
+ - Added a direct link to the task when clicking on task title in preview card
+ - fixed a bug in time log preview
+
+## 1.0.14
+ - Tasks now show Logged Time
+ - Can now log time on tasks
+ - To use Time Logging make sure the option "enabletimeTracking" is on in config
+
+## 1.0.13
+ - Fixed an issue with task creation that randomly occured
+
+## 1.0.12
+ - Workaround for VSCode GlobalState not always updating. 
+
+## 1.0.9
+- Fixed an issue with creating tasks in non code files
+- Fixed an issue where login credentials where not stored
+
+## 1.0.9
+- Fixed an issue with creating tasks without the Github Extension installed. 
+
+## 1.0.8
+- Added a workaround for multiple VSCode windows and VSCode globalStorage cache causing login problems
+
 ## 1.0.7
 - fixed an issue for EU accounts
 - fixed a login issue
@@ -7,23 +35,3 @@
 - fixed a bug where links on the task card where not pointing to the correct url
 - Creating a task without an active project picked should be a bit more smooth now. 
 
-## 1.0.5
-- added a warning when trying to select a project without a folder opened
-- fixed a bug that made a restart necessary after logging in. User's don't need to restart vscode after logging in anymore. 
-
-## 1.0.4
-- fixed adding comments
-- fixed rare issue where task lists would not show when trying to create a task
-
-
-## 1.0.3
-- workaround for vscode "globalStorage" bug
-
-## 1.0.1 & 1.0.2
- - various bug fixes
-
-## 1.0.0
-
-- Initial release
-- fixed various bugs
-- performance improvements

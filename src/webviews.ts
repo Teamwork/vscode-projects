@@ -1,9 +1,10 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {Template} from './adaptiveCards/templateEngine';
-import {EvaluationContext} from './adaptiveCards/expressionParser';
+import {Template} from 'adaptivecards-templating';
+import {EvaluationContext} from 'adaptivecards-templating';
 import { TeamworkProjectsApi } from './teamworkProjectsApi';
-
+import TaskCard = require('./cards/taskCard.json');
+import TaskCardWithTime = require('./cards/taskCardWithTime.json');
 
 export class WebViews{
     private readonly _extensionPath: string;    
@@ -104,17 +105,17 @@ export class WebViews{
 
             const templateFile = require(path.join(this._extensionPath, 'media/cards', 'taskCard.json'));
             
-            // let axios = require("axios");
-            // let result = await axios({
-            //     method:'get',
-            //     url: "https://adaptiveapi.azurewebsites.net/card/cardtemplate/3",
-            // })
-            // .catch(function (error) {
-            //     console.log(error);
-           // });
+            let axios = require("axios");
+            let result = await axios({
+                 method:'get',
+                 url: "https://templates.adaptivecards.io/teamwork.com/projects/task.json",
+            })
+            .catch(function (error) {
+                 console.log(error);
+           });
             
-           //  var  _templatePayload: object = result.data;
-           var  _templatePayload: object = templateFile;
+           var  _templatePayload: object = result.data;
+           //var  _templatePayload: object = templateFile;
 
              let template = new Template( _templatePayload);
              let context = new EvaluationContext();

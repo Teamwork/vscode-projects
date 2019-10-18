@@ -1,7 +1,7 @@
 {
 	"name": "twp",
 	"displayName": "Teamwork Projects",
-	"description": "Teamwork Projects extension for VSCode lets you link projects to your workspace and browse Teamwork Projects tasks.",
+	"description": "The Teamwork Projects and Visual Studio Code Editor extension allows you to manage your projects and tasks directly from within Visual Studio Code so you can get more work done from one place. ",
 	"publisher": "teamwork",
 	"homepage": "https://www.teamwork.com",
 	"bugs": {
@@ -25,7 +25,7 @@
 			"url": "https://twitter.com/Teamwork"
 		}
 	],
-	"version": "1.0.7",
+	"version": "1.0.16",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
@@ -58,6 +58,16 @@
 						"default": false,
 						"type": "boolean",
 						"description": "Show native teamwork panel (false: uses adaptive card )"
+					},
+					"twp.ShowGitInfo": {
+						"default": true,
+						"type": "boolean",
+						"description": "Add git information to newly created tasks"
+					},
+					"twp.enabletimeTracking": {
+						"default": true,
+						"type": "boolean",
+						"description": "Show your logged time on a task and enable logging time"
 					}
 				}
 			}
@@ -202,6 +212,7 @@
 		"@types/rimraf": "^2.0.2"
 	},
 	"dependencies": {
+		"adaptivecards-templating": "0.1.0-alpha.1",
 		"axios": "^0.18.1",
 		"cryptiles": ">=4.1.2",
 		"dateformat": "^3.0.3",

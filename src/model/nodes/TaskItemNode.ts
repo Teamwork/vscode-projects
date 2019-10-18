@@ -50,7 +50,7 @@ export class TaskItemNode implements INode {
     
                 var config = vscode.workspace.getConfiguration('twp');
                 var onlySelf = config.get("OnlySelfAssigned");
-                let userData : TeamworkAccount = this.twp._context.globalState.get("twp.data.activeAccount");
+                let userData : TeamworkAccount = this.twp.ActiveAccount;
                 let userId = userData.userId;
                 var showUnassigned = config.get("showUnAssigned");
                 for(let i = 0; i < this.subTasks.length; i++){
