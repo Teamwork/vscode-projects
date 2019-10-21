@@ -1,4 +1,9 @@
 # Change Log
+## 1.0.17
+ - Git extension can now be toggled on/off in settings (Thanks to: [Dan Bryant](https://github.com/cube-dan))
+ - Adaptive Card now loaded from repository
+ - various smaller bugfixes
+
 ##
  - Fixed a login issue for Linux users
  - Potential fix for -> [Issue: 2](https://github.com/Teamwork/vscode-projects/issues/2)

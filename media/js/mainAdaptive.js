@@ -301,6 +301,11 @@
                     "spacing": 16
                 }
             };
+
+            $.get("https://templates.adaptivecards.io/teamwork.com/config/teamworkDark.json").success(function(data){
+                hostConfig = data;
+            });
+
             adaptiveCard.hostConfig = new AdaptiveCards.HostConfig(hostConfig);
         
             // Adaptive Cards - Actions

@@ -302,7 +302,7 @@ export class TeamworkProjectsApi{
             todo["estimated"] = estimated;
             
             timeEntries.data.timeEntries.forEach(element => {
-                element["date"] = dateFormat(Date.parse(element["date"]), "dd-MM-yyyy hh:mm");
+                element["dateFormatted"] = dateFormat(Date.parse(element["date"]), "dd-MM-yyyy hh:mm");
                 totalHours += element["hours"];
                 totalMinutes += element["minutes"];
             });
