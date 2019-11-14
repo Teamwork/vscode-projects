@@ -1,4 +1,6 @@
 # Change Log
+## 1.0.17
+ - Fixed an issue where comments date time was shown wrong
 ##
  - Fixed a login issue for Linux users
  - Potential fix for -> [Issue: 2](https://github.com/Teamwork/vscode-projects/issues/2)
