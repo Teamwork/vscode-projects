@@ -1,4 +1,6 @@
 # Change Log
+## 1.0.18
+ - Renamed to Teamwork, replaced icons
 ## 1.0.17
  - Fixed an issue where comments date time was shown wrong
 ##
