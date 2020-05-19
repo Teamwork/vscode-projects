@@ -85,13 +85,13 @@ export class TeamworkProjectsApi{
 
         let result;
         // Load from cache if duration less than 30 minutes
-        let cachedProjects : Project[] = context.globalState.get("twp.data.project",null);
-        let lastUpdated : Date = context.globalState.get("twp.data.projects.lastUpdated", new Date() );
-        if(cachedProjects && cachedProjects.length > 0 && lastUpdated && !force){
-            if(Utilities.DateCompare(lastUpdated,30)){
-                result =  cachedProjects;
-            }
-        }
+        // let cachedProjects = JSON.parse(await context.globalState.get("twp.data.projectList",null));
+        // let lastUpdated = await context.globalState.get("twp.data.projectList.lastUpdated", new Date() );
+        // if(cachedProjects && cachedProjects.length > 0 && lastUpdated && !force){
+        //     if(Utilities.DateCompare(lastUpdated,30)){
+        //         result =  cachedProjects;
+        //     }
+        //  }
 
         if(!result){
             const url = this.root + '/tasks/projects.json?type=canAddItem&pageSize=200';
@@ -111,9 +111,9 @@ export class TeamworkProjectsApi{
             });
         }
 
-       if(!isNullOrUndefined(result.data)){ await context.globalState.update("twp.data.project",result.data.projects);}
-       if(!isNullOrUndefined(result.data)){  await context.globalState.update("twp.data.projects.lastUpdated", new Date() );}
-        return result.data.projects;
+       // if(!isNullOrUndefined(result.data)){ await context.globalState.update("twp.data.projectList", JSON.stringify(result.data.projects));}
+       // if(!isNullOrUndefined(result.data)){ await context.globalState.update("twp.data.projectList.lastUpdated", new Date() );}
+       return result.data.projects;
     }
 
     public async GetPeopleInProject(context: vscode.ExtensionContext,force: boolean = false,id: string) : Promise<Person[]>{
@@ -144,13 +144,13 @@ export class TeamworkProjectsApi{
         let response: TaskListResponse;
     
         // Load from cache if duration less than 30 minutes
-        let cachedNodes : TaskListResponse = await context.globalState.get("twp.data." + id + ".tasklist",null);
-        let lastUpdated : Date = await context.globalState.get("twp.data.tasklists." + id + ".lastUpdated",new Date() );
-        if(cachedNodes !== null && cachedNodes["data"]["tasklists"].length > 0 && lastUpdated && !force){
-            if(Utilities.DateCompare(lastUpdated,30)){
-                return cachedNodes["data"]["tasklists"];
-            }
-        }
+        // let cachedNodes : TaskListResponse = await context.globalState.get("twp.data." + id + ".tasklist",null);
+        // let lastUpdated : Date = await context.globalState.get("twp.data.tasklists." + id + ".lastUpdated",new Date() );
+        // if(cachedNodes !== null && cachedNodes["data"]["tasklists"].length > 0 && lastUpdated && !force){
+        //     if(Utilities.DateCompare(lastUpdated,30)){
+        //         return cachedNodes["data"]["tasklists"];
+        //     }
+        // }
     
         const url = this.root + '/projects/api/v1/projects/' + id + '/tasklists.json?page=1&pageSize=100';
 
@@ -164,8 +164,8 @@ export class TeamworkProjectsApi{
         });
     
     
-        await context.globalState.update("twp.data." + id + ".tasklist",response);
-        await context.globalState.update("twp.data.tasklists." + id + ".lastUpdated",Date.now());
+        // context.globalState.update("twp.data." + id + ".tasklist",response);
+        // context.globalState.update("twp.data.tasklists." + id + ".lastUpdated",Date.now());
         return response["data"]["tasklists"]; 
     }
 

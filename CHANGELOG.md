@@ -1,4 +1,7 @@
 # Change Log
+## 1.0.19
+ - To get the extension working again in Visual Studio Code 1.45.1 we temporarily disabled all caching in the extension. 
+   You might see slower loading times, we keep to have this updated as soon as possible.
 ## 1.0.18
  - Renamed to Teamwork, replaced icons
 ## 1.0.17
