@@ -11,6 +11,12 @@ assignees: ''
 
 The creators and maintainers of this project are doing it with enthusiasm and happiness, in odd moments between other projects and possibly even in their spare time. Please be kind to them, and understand that although they hope to get the time & energy to understand & implement your suggestion :crossed_fingers:, this is not an officially supported product or service, and therefore doing so is not a part of their day jobs.
 
+**Name it**
+If this request contains multiple features then list them as bullet points.
+
+**Describe the use case**
+What type of user would use it and what are they trying to do?
+
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
