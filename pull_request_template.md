@@ -4,7 +4,7 @@ The creators and maintainers of this project are doing it with enthusiasm and ha
 
 ## Checklist
 
-[] changes include new automated tests covering them
-[] have tested manually yourself
-[] PR describes why you made the change, not just how
-[] PR describes where where we should look to best understand changes & their effects (in code, in the resulting running software, elsewhere?)
+- [] changes include new automated tests covering them
+- [] have tested manually yourself
+- [] PR describes why you made the change, not just how
+- [] PR describes where where we should look to best understand changes & their effects (in code, in the resulting running software, elsewhere?)
