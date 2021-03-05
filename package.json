@@ -213,7 +213,7 @@
 	},
 	"dependencies": {
 		"adaptivecards-templating": "0.1.0-alpha.1",
-		"axios": "^0.18.1",
+		"axios": "^0.21.1",
 		"cryptiles": ">=4.1.2",
 		"dateformat": "^3.0.3",
 		"ftp": "^0.3.10",
