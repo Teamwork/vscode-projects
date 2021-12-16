@@ -262,7 +262,7 @@ export class TeamworkProjects{
                         edit.setEndOfLine(vscode.EndOfLine.CRLF);
                         edit.insert(new vscode.Position(line, cursor), commentWrapper + "Task: " + content + "\r\n");
                         edit.insert(new vscode.Position(line, cursor), commentWrapper + "Ref: " + reference + "\r\n");
-                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Link: " + root + "tasks/" + id + "\r\n");
+                        edit.insert(new vscode.Position(line, cursor), commentWrapper + "Link: " + root + "/tasks/" + id + "\r\n");
                         edit.insert(new vscode.Position(line, cursor), commentWrapper + "Assigned To: " + responsible + "\r\n"+ "\r\n");
                     });
                     
