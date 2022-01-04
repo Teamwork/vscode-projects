@@ -436,7 +436,8 @@ export class TeamworkProjects{
         // Linux users get the old fashioned username+password login
         var isLinux = process.platform === "linux";
         if ( !isLinux ){
-            vscode.env.openExternal(vscode.Uri.parse('https://www.teamwork.com/launchpad/login?state=VSCODE&redirect_uri=vscode://teamwork.twp/loginData'));
+            const authURL = `https://www.teamwork.com/launchpad/login?state=VSCODE&redirect_uri=${this.API.redirectURI()}&client_id=${this.API.clientID()}`;
+            vscode.env.openExternal(vscode.Uri.parse(authURL));
         }else{
             const url = await vscode.window.showInputBox({
                 value: '',

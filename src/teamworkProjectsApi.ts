@@ -454,19 +454,18 @@ export class TeamworkProjectsApi{
         var loginaxios = require("axios");
         var config = vscode.workspace.getConfiguration('twp');
 
-        let url = 'https://api.teamwork.com/launchpad/v1/token.json?code=' + code;
-
-        let data = {
+        const url = 'https://api.teamwork.com/launchpad/v1/token.json';
+        const data = {
             code: code,
+            client_id: this.clientID(),
+            client_secret: this.clientSecret(),
+            redirect_uri: this.redirectURI(),
         };
 
-        let json = await loginaxios({
-            method:'post',
-            data: JSON.stringify(data),
-            url,
-        })
+        const json = await loginaxios.post(url, data)
         .catch(function (error) {
             console.log(error);
+            console.log(error?.response);
             return null;
         });
 
@@ -548,6 +547,17 @@ export class TeamworkProjectsApi{
         return rhours + "h " + rminutes + "m";
     }
 
+    public clientID(): string {
+        return process.env.DEVPORTAL_CLIENT_ID;
+    }
+
+    public clientSecret(): string {
+        return process.env.DEVPORTAL_CLIENT_SECRET;
+    }
+
+    public redirectURI(): string {
+        return 'vscode://teamwork.twp/loginData';
+    }
 }
 
 
