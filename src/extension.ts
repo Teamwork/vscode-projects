@@ -1,12 +1,13 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { config as dotenvConfig } from 'dotenv';
 import { TaskProvider } from './taskProvider';
 import { TeamworkProjects } from './teamworkProjects';
 import { ProjectConfig } from './model/projectConfig';
 import { TaskItemNode } from './model/nodes/TaskItemNode';
 
-
+dotenvConfig();
 
 export async function activate(context: vscode.ExtensionContext) {
 	
@@ -19,10 +20,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Register Url Handler for App
 	vscode.window.registerUriHandler({
         handleUri(uri: vscode.Uri) {
-			if(uri.toString().indexOf("VSCODE") > 0){
+			const query = new URLSearchParams(uri.query);
+
+			if(query.get('state') === 'VSCODE'){
 				vscode.window.showInformationMessage("Teamwork: finishing login, please wait a second");
-				let code = uri.query.toString().replace("code=","").replace("state=VSCODE","");
-				let account = twp.FinishLogin(context,code);
+
+				twp.FinishLogin(context, query.get('code'));
 			}else{
 				// Not yet implemented
 			}
