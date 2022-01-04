@@ -1,1 +1,0 @@
-{"version":3,"file":"projectresponse.js","sourceRoot":"","sources":["../../src/model/projectresponse.ts"],"names":[],"mappings":";;AA6FA,2CAA2C;AAC3C,MAAa,OAAO;IACT,MAAM,CAAC,iBAAiB,CAAC,IAAY;QACxC,OAAO,IAAI,CAAC,KAAK,CAAC,IAAI,CAAC,CAAC;IAC5B,CAAC;IAEM,MAAM,CAAC,qBAAqB,CAAC,KAAsB;QACtD,OAAO,IAAI,CAAC,SAAS,CAAC,KAAK,CAAC,CAAC;IACjC,CAAC;CACJ;AARD,0BAQC"}
