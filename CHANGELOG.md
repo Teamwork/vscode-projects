@@ -1,4 +1,6 @@
 # Change Log
+## 1.0.21
+ - Fixed build script issue with auth credentials.
 ## 1.0.20
  - Added Teamwork Developer portal client credentials to auth process.
 ## 1.0.19
