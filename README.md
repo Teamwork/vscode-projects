@@ -29,3 +29,6 @@ This extension contributes the following settings:
 ## Support: 
 * If you're having issues send a mail to support@teamwork.com
 * or create an issue on the repository
+
+## Useful links:
+* Publisher page: https://marketplace.visualstudio.com/manage/publishers/Teamwork
