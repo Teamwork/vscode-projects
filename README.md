@@ -31,4 +31,5 @@ This extension contributes the following settings:
 * or create an issue on the repository
 
 ## Useful links:
-* Publisher page: https://marketplace.visualstudio.com/manage/publishers/Teamwork
+* Publisher page: https://marketplace.visualstudio.com/publishers/Teamwork
+* Extension page: https://marketplace.visualstudio.com/items?itemName=Teamwork.twp
